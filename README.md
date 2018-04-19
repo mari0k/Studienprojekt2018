@@ -10,7 +10,7 @@ Mehrperiodische Betrachtung der Produktions- und Lagerhaltungsentscheidungen ein
   * Verkaufspreis `p_i`
   * Volumen `v_i`
   * Wegwerfkosten `w_i`
-  * Produktionsbescchränkung `b_i`
+  * Produktionsbeschränkung `b_i`
   * (Nachfrage `d_i`)
 * Bankrott bei negativem Kapital
 
