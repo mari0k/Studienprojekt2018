@@ -28,23 +28,6 @@ Zwischen Periode `i-1` und Periode `i`:
   2. Zufallsvariable, anhand der die Nachfrage verteilt ist, ist bekannt
   3. keine weitere Kenntnis als die aus vorherigen Perioden (`0,...,i-1`)gesammelten Informationen
 
-
-
-Zu Beginn jeder Periode
-* Fixkosten `F` werden bezahlt
-* Entscheidung wie viel von jedem Produkt in der aktuellen Periode produziert werden soll
-* Kenntnis über Nachfrage `d_i` (3 Möglichkeiten)
-  1. Nachfrage von Anfang an bekannt
-  2. Zufallsvariable, anhand der die Nachfrage verteilt ist, ist bekannt (normalverteilt?!)
-  3. keine weitere Kenntnis als die aus vorherigen Perioden gesammelten Informationen
-
-Am Ende jeder Periode
-* tatsächliche Nachfrage `d_i` wird bekannt
-* Produkte werden entsprechend der Nachfrage verkauft -> Verkaufserlös
-* Übrig bleibende Produkte müssen zwischengelagert werden
-  * Entscheidung wie viele Lagerräume angemietet werden
-  * Entscheidung welches Produkt in welchen Lagerraum gelagert wird
-
 Zur Zwischenlagerung stehen Lagerräume zur Verfügung, die angemietet werden können.
 * Lagervolumen `V`
 * Lagerkosten je Periode `C`
