@@ -3,6 +3,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
+/*
+ * This Class generates random instances of the given problem.
+ * Data is written in files
+ *   instance_name.in			static problem parameters such as Startkapital, Fixkosten, Lagervolumen, Lagerkosten, ...  
+ *   instance_name.deminfo		static information about the distribution of demand
+ *   instance_name.dem			the actual demand, which is distributed consistent to information given in instance_name.deminfo
+ */
+
 public class RandomInstanceGenerator {
 
 	public static void main(String[] args) {
