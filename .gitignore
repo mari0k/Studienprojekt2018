@@ -70,6 +70,7 @@ Temporary Items
 # Covers Eclipse Stuff
 # Reference: https://github.com/github/gitignore/blob/master/Global/Eclipse.gitignore
 
+.classpath
 .metadata
 bin/
 tmp/
