@@ -6,12 +6,12 @@ import gurobi.*;
 
 public class SolverGurobi {
 
-	public static void solveBinPacking(double[] zahlen, double binGrˆﬂe) throws IOException, GRBException {
+	public static void solveBinPacking(double[] zahlen, double binGroeﬂe) throws IOException, GRBException {
 
 		int n = zahlen.length;
 
 		for (int i = 0; i < n; i++) {
-			if (zahlen[i] > binGrˆﬂe) {
+			if (zahlen[i] > binGroeﬂe) {
 				System.out.println("Falsche Eingabe");
 				return;
 			}
@@ -66,7 +66,7 @@ public class SolverGurobi {
 					expr.addTerm(zahlen[i], t[i][j]);
 
 				}
-				model.addConstr(expr, GRB.LESS_EQUAL, binGrˆﬂe, "Bin Grenze eingehalten Bin" + j);
+				model.addConstr(expr, GRB.LESS_EQUAL, binGroeﬂe, "Bin Grenze eingehalten Bin" + j);
 			}
 
 			// Add constraint: Bin genutzt
