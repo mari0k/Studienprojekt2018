@@ -1,7 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /*
  * This Class generates random instances of the given problem.
@@ -14,8 +14,7 @@ import java.util.Random;
 public class RandomInstanceGenerator {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Random rand = new Random();
+		SecureRandom rand = new SecureRandom();
 		
 		String instanceName = null;
 		int numberOfProducts = rand.nextInt(20) + 10;
@@ -60,7 +59,12 @@ public class RandomInstanceGenerator {
 		// generate demands
 		for (int j = 0; j < numberOfPeriods; j++) {
 			for (int i = 0; i < numberOfProducts; i++) {
-				demand[j][i] = Math.max(0, (int) (rand.nextGaussian()*demandStandardDeviation[i]+demandMean[i]));	// normal distributed random number
+				int d = -1;
+				int k = 0;
+				while(k++ < 10 && d < 0) {	// 10 tries to generate random number that is not negative
+					d = (int) Math.round(rand.nextGaussian()*demandStandardDeviation[i]+demandMean[i]);	// normal distributed random number
+				}
+				demand[j][i] = Math.max(0, d);
 			}
 		}
 		
