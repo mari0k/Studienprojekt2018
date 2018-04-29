@@ -80,7 +80,7 @@ public class MainVaR{
 			
 			
 			/*
-			 * Store products that were not sold
+			 * Store or dispose products that were not sold
 			 */
 			int storageCost = 0;
 			int disposalCost = 0;
@@ -142,32 +142,47 @@ public class MainVaR{
        			model.set("MIPGap", "0");
        			model.set("MIPGapAbs", "0.8");
        			model.set("LogToConsole", "0");
+       			model.set("TimeLimit", "40");
        			model.optimize();
+       			
+       			// check status codes
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+					System.out.println("Periode " + period + ": Lagerungsproblem unzulässig. Bankrott unumgänglich. Programmabbruch!");
+       				break;
+       			}
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+					System.out.println("Periode " + period + ": Zeitlimit erreicht. Verwende suboptimale Lösung (Lagerung). Bankrott in nächster Periode möglich.");
+       			}
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
+					System.out.println("Periode " + period + ": Optimale Lagerungsentscheidung gefunden.");
+       			}
        			
        			
        			// get data from optimal solution
-       			for (int j = 0; j < L; j++) {
-       				storageCost += C * Math.round(y[j].get(GRB.DoubleAttr.X));
+       			if (model.get(GRB.IntAttr.SolCount) < 1) {
+       				System.out.println("Periode " + period + ": Keine zulässige Lösung für Lagerungsproblem innerhalb des Zeitlimits gefunden. Lagere nichts. Bankrott wahrscheinlich.");
+       				for (int i = 0; i < n; i++) {
+	       				disposalCost += w[i] * bestand[i];
+	       				bestand[i] = 0;
+       				}
        			}
-       			for (int i = 0; i < n; i++) {
-       				disposalCost += w[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
+       			else {
+       				for (int j = 0; j < L; j++) {
+	       				storageCost += C * Math.round(y[j].get(GRB.DoubleAttr.X));
+	       			}
+	       			for (int i = 0; i < n; i++) {
+	       				disposalCost += w[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
+	       				bestand[i] -= (int) Math.round(x[i].get(GRB.DoubleAttr.X));
+	       			}
        			}
-       			for (int i = 0; i < n; i++) {
-       				bestand[i] -= (int) Math.round(x[i].get(GRB.DoubleAttr.X));
-       			}
+       			
 
        			// dispose model
        			model.dispose();
        			env.dispose();
 			} catch (GRBException e) {
-				if (e.getErrorCode() == 10005) {
-					System.out.println("Lagerungsproblem unzulässig. Bankrott unvermeidbar.");
-					break;
-				}
-				else {
-	                System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-	                e.printStackTrace();
-				}
+				System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+	            e.printStackTrace();
 			}
 					
 			//update capital
@@ -311,35 +326,45 @@ public class MainVaR{
        			model.set("MIPGap", "0");
        			model.set("MIPGapAbs", "0.8");
        			model.set("LogToConsole", "0");
+       			model.set("TimeLimit", "40");
        			model.optimize();
+       			
+       			// check status codes
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+					System.out.println("Periode " + period + ": Produktionsproblem unzulässig. Bankrott in nächster Periode wahrscheinlich.");
+       			}
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+					System.out.println("Periode " + period + ": Zeitlimit erreicht. Verwende suboptimale Lösung (Produktion). Bankrott in nächster Periode möglich.");
+       			}
+       			if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
+					System.out.println("Periode " + period + ": Optimale Produktionsentscheidung gefunden.");
+       			}
        			
        			
        			// get data from optimal solution
-       			for (int i = 0; i < n; i++) {
-       				productionCost += c[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
+       			if (model.get(GRB.IntAttr.SolCount) < 1) {
+       				System.out.println("Periode " + period + ": Keine zulässige Lösung für Produktionsproblem innerhalb des Zeitlimits gefunden. Produziere nichts. Bankrott in nächster Periode wahrscheinlich.");
        			}
-       			for (int i = 0; i < n; i++) {
-       				bestand[i] += (int) Math.round(x[i].get(GRB.DoubleAttr.X));
+       			else {
+	       			for (int i = 0; i < n; i++) {
+	       				productionCost += c[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
+	       				bestand[i] += (int) Math.round(x[i].get(GRB.DoubleAttr.X));
+	       			}
        			}
 
        			// dispose model
        			model.dispose();
        			env.dispose();
 			} catch (GRBException e) {
-				if (e.getErrorCode() == 10005) {
-					System.out.println("Produktionsproblem unzulässig. Bankrott in nächster Periode sehr wahrscheinlich.");
-				}
-				else {
-	                System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-	                e.printStackTrace();
-				}
+				System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+	            e.printStackTrace();
 			}
 			//update capital
 			capital -= productionCost;
 			
 			
-			System.out.println("Kapital nach Periode " + period + ": " + capital);
-			System.out.print("Bestand: ");
+			System.out.println("Periode " + period + ": Kapital nach Produktion: " + capital);
+			System.out.print("Periode " + period + ": Bestand nach Produktion: ");
 			for (int i = 0; i < n; i++) {
 				System.out.print(bestand[i] + " ");
 			}
