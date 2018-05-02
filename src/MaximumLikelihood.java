@@ -11,7 +11,7 @@ public class MaximumLikelihood {
 
 	}
 	
-	public Double[] estimate(ArrayList<Integer> realizations) {
+	public static Double[] estimate(ArrayList<Integer> realizations) {
 		Double[] estimators = new Double[3];
 		
 		if (realizations.size() <= 1) {

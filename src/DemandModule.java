@@ -22,7 +22,7 @@ public class DemandModule {
 	
     private int numberOfProducts = 0;
 	private int numberOfPeriods = 0;
-	private int currentPeriod = -1;
+	private int currentPeriod = 0;
 	private BufferedReader br;
 	
 	private long lastDemandCall = 0;
