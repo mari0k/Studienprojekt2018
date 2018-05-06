@@ -1,46 +1,48 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class FirstFitDecreasing {
 	
-	public static int packe(int binSize, int[] items) {
-		int numBins = 0;
+	public static int[][] pack(int binSize, int[] bestand, int[] v) {
 		ArrayList<Bin> bins = new ArrayList<>();
+		Item[] items = new Item[bestand.length];
+		for (int i = 0; i < bestand.length; i++) {
+			items[i] = new Item(i, bestand[i], v[i]);
+		}
 		Arrays.sort(items);
-		
-		for (int i = items.length -1; i > -1; i--) {
-			boolean newBinNeeded = true;
-			for (Bin bin : bins) {
-				if (bin.fits(items[i])) {
-					bin.add(items[i]);
-					newBinNeeded = false;
-					break;
+		// packe Items in Bins
+		for (int i = 0; i < items.length; i++) {
+			while (items[i].getAmount() > 0) {
+				boolean newBinNeeded = true;
+				for (Bin bin : bins) {
+					items[i].setAmount(items[i].getAmount() - bin.addAsManyAsPossible(items[i]));
+					if (items[i].getAmount() == 0) {
+						newBinNeeded = false;
+						break;
+					}
+				}
+				if (newBinNeeded) {
+					bins.add(new Bin(binSize));
 				}
 			}
-			if (newBinNeeded) {
-				bins.add(new Bin(binSize - items[i]));
-				numBins++;
+		}
+		// konstruiere Return-Array
+		int[][] returnArray = new int[bestand.length][bins.size()];
+		for (int i = 0; i < bestand.length; i++) {
+			for (int j = 0; j < bins.size(); j++) {
+				returnArray[i][j] = 0;
 			}
 		}
-		
-		return numBins;
-	}
-	
-	public static int[] prepare(int[] bestand, int[] volumes) {
-		int sum = 0;
-		for (int i = 0; i < bestand.length; i++) {
-			sum += bestand[i];
-		}
-		int[] items = new int[sum];
-		int k = 0;
-		for (int i = 0; i < bestand.length; i++) {
-			for (int j = 0; j < bestand[i]; j++) {
-				items[k] = volumes[i];
-				k++;
+		int counter = 0;
+		for (Bin bin : bins) {
+			for (int i : bin.getContent().keySet()) {
+				returnArray[i][counter] = bin.getContent().get(i);
 			}
+			counter++;
 		}
 		
-		return items;
+		return returnArray;
 	}
 
 }
@@ -48,18 +50,62 @@ public class FirstFitDecreasing {
 class Bin {
 	
 	private int free;
+	private HashMap<Integer, Integer> content;
 	
 	public Bin(int size) {
 		this.free = size;
-		
+		this.content = new HashMap<>();
 	}
 	
-	public boolean fits(int item) {
-		return (item < free);
+	public int addAsManyAsPossible(Item item) {
+		int i = 0;
+		for (; i < item.getAmount(); i++) {
+			if (free > item.getVolume()) {
+				free -= item.getVolume();
+			} else {
+				break;
+			}
+		}
+		if (i > 0) content.put(item.getId(), i);
+		return i;
 	}
 	
-	public void add(int item) {
-		free -= item;
-		assert free >= 0: "Fehler! Bin zu voll.";
+	public HashMap<Integer, Integer> getContent() {
+		return content;
 	}
+}
+
+class Item implements Comparable<Item> {
+	
+	private int id;
+	private int amount;
+	private int volume;
+	
+	public Item(int id, int amount, int volume) {
+		this.id = id;
+		this.amount = amount;
+		this.volume = volume;
+	}
+
+	@Override
+	public int compareTo(Item item) {
+		return item.getVolume() - this.volume;	// sort descending
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public int getAmount() {
+		return amount;
+	}
+	
+	public void setAmount(int k) {
+		this.amount = k;
+	}
+
+	public int getVolume() {
+		return volume;
+	}	
+	
 }

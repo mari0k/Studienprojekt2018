@@ -42,7 +42,9 @@ public class MainVaR{
 		int[] p = inst.get_p();
 		int[] v = inst.get_v();
 		int[] w = inst.get_w();
-		int L = 50;	// upper bound for storage rooms needed 
+		int[][] temp = FirstFitDecreasing.pack(V, b, v);
+		int L = temp[0].length;	// upper bound for storage rooms needed (computed with FirstFitDecreasing)
+		temp = null;
 		int[] bestand = new int[n];
 		for (int i = 0; i < n; i++) {
 			bestand[i] = 0;
@@ -265,7 +267,9 @@ public class MainVaR{
 			/*
 			 * Store or dispose products that were not sold
 			 */
-			L = FirstFitDecreasing.packe(V, FirstFitDecreasing.prepare(bestand, v));
+			int[][] initial_z = FirstFitDecreasing.pack(V, bestand, v);
+			int L_store = initial_z[0].length;
+			// TODO übergebe Gurobi die mittels FFD ermittelte Startlösung
 			int storageCost = 0;
 			int disposalCost = 0;
 			try {
@@ -277,38 +281,38 @@ public class MainVaR{
                 for (int i = 0; i < n; i++) {                	
             		x[i] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "x_"+i);	// wegwerfen
                 }           
-				GRBVar[] y = new GRBVar[L];
-                for (int j = 0; j < L; j++) {                	
+				GRBVar[] y = new GRBVar[L_store];
+                for (int j = 0; j < L_store; j++) {                	
             		y[j] = model.addVar(0, 1, 0, GRB.BINARY, "y_"+j);	// Lager verwenden
                 }           
 				GRBVar[][] z = new GRBVar[n][L];
-                for (int i = 0; i < n; i++) {                	
-                	for (int j = 0; j < L; j++) {                	
+                for (int i = 0; i < n; i++) {
+                	for (int j = 0; j < L_store; j++) {                	
                 		z[i][j] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
                     }
                 }
                 
                 // create constraints 
                 GRBLinExpr expr = new GRBLinExpr();
-                for (int j = 0; j < L; j++) expr.addTerm(C, y[j]);
+                for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
            		for (int i = 0; i < n; i++) expr.addTerm(w[i], x[i]);
    	      		model.addConstr(expr, GRB.LESS_EQUAL, capital - inst.getF(), "Kapitalschranke"); 
    	      		
    	      		for (int i = 0; i < n; i++) {
 	                expr = new GRBLinExpr();
        	      		expr.addTerm(1.0, x[i]);    
-	                for (int j = 0; j < L; j++) expr.addTerm(1.0, z[i][j]);
+	                for (int j = 0; j < L_store; j++) expr.addTerm(1.0, z[i][j]);
 	   	      		model.addConstr(expr, GRB.GREATER_EQUAL, bestand[i], "alles, was nicht weggeworfen wird, einlagern"); 
    	      		}
    	      		
-   	      		for (int j = 0; j < L; j++) {
+   	      		for (int j = 0; j < L_store; j++) {
 	                expr = new GRBLinExpr();
        	      		expr.addTerm(-1.0*V, y[j]);    
 	                for (int i = 0; i < n; i++) expr.addTerm(v[i], z[i][j]);
 	   	      		model.addConstr(expr, GRB.LESS_EQUAL, 0.0, "Lagervolumen und nur angemietete Lager"); 
    	      		}
                 
-	   	      	for (int j = 0; j < L - 1; j++) {
+	   	      	for (int j = 0; j < L_store - 1; j++) {
 	       			GRBLinExpr exprLinks = new GRBLinExpr();
 	       			GRBLinExpr exprRechts = new GRBLinExpr();
 	       			exprLinks.addTerm(1, y[j]);
@@ -318,7 +322,7 @@ public class MainVaR{
 	   	      	
 	   	      	// create objective
 	   	      	expr = new GRBLinExpr();
-       			for (int j = 0; j < L; j++) expr.addTerm(C, y[j]);
+       			for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
        			for (int i = 0; i < n; i++) expr.addTerm(c[i] + w[i], x[i]);
        			model.setObjective(expr, GRB.MINIMIZE);
            		
@@ -352,7 +356,7 @@ public class MainVaR{
        			}
        			else {
        				int storageCount = 0;
-       				for (int j = 0; j < L; j++) {
+       				for (int j = 0; j < L_store; j++) {
        					storageCount += Math.round(y[j].get(GRB.DoubleAttr.X));
 	       				storageCost += C * Math.round(y[j].get(GRB.DoubleAttr.X));
 	       			}
