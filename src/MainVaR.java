@@ -280,15 +280,18 @@ public class MainVaR{
 				GRBVar[] x = new GRBVar[n];
                 for (int i = 0; i < n; i++) {                	
             		x[i] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "x_"+i);	// wegwerfen
+            		x[i].set(GRB.DoubleAttr.Start, 0.0);
                 }           
 				GRBVar[] y = new GRBVar[L_store];
                 for (int j = 0; j < L_store; j++) {                	
             		y[j] = model.addVar(0, 1, 0, GRB.BINARY, "y_"+j);	// Lager verwenden
+            		y[j].set(GRB.DoubleAttr.Start, 1.0);
                 }           
 				GRBVar[][] z = new GRBVar[n][L];
                 for (int i = 0; i < n; i++) {
                 	for (int j = 0; j < L_store; j++) {                	
                 		z[i][j] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
+                		z[i][j].set(GRB.DoubleAttr.Start, initial_z[i][j] * 1.0);
                     }
                 }
                 

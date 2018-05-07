@@ -22,8 +22,11 @@ public class FirstFitDecreasing {
 						break;
 					}
 				}
-				if (newBinNeeded) {
-					bins.add(new Bin(binSize));
+				while (newBinNeeded) {
+					Bin bin = new Bin(binSize);
+					items[i].setAmount(items[i].getAmount() - bin.addAsManyAsPossible(items[i]));
+					bins.add(bin);
+					if (items[i].getAmount() == 0) newBinNeeded = false;
 				}
 			}
 		}
