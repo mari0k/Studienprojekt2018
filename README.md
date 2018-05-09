@@ -14,13 +14,13 @@ Mehrperiodische Betrachtung der Produktions- und Lagerhaltungsentscheidungen ein
   * (Nachfrage `d_i`)
 * Bankrott bei negativem Kapital
 
-Entscheidungsablauf in Periode `i`:
+Entscheidungsablauf in Periode `j`:
 * Fixkosten `F` werden bezahlt
-* Entscheidung wie viel von jedem Produkt in Periode `i` produziert werden soll
+* Entscheidung wie viel von jedem Produkt in Periode `j` produziert werden soll
 * Dazu: eingeschränkte Kenntnis über Nachfrage `d_i`(3 Möglichkeiten)
   1. Nachfrage von Anfang an bekannt
   2. Zufallsvariable, anhand der die Nachfrage verteilt ist, ist bekannt
-  3. keine weitere Kenntnis als die aus vorherigen Perioden (`0,...,i-1`)gesammelten Informationen
+  3. keine weitere Kenntnis als die aus vorherigen Perioden (`0,...,j-1`)gesammelten Informationen
 * Tatsaächliche Nachfrage `d_i` wird bekannt
 * Bereits produzierte Produkte werden entsprechend der Nachfrage verkauft
 * Übrig bleibende Produkte müssen weggeworfen oder zwischengelagert werden
