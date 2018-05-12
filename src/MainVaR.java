@@ -86,7 +86,6 @@ public class MainVaR{
 			/*
 			 * Produce products
 			 */
-			L = 50;
 			if (inst.isKnownDistributions() != true) {
 				for (int i = 0; i < n; i++) {
 					Double[] estimates = MaximumLikelihood.estimate(demandModule.getPastDemands().get(i));
@@ -267,131 +266,145 @@ public class MainVaR{
 			/*
 			 * Store or dispose products that were not sold
 			 */
-			int[][] initial_z = FirstFitDecreasing.pack(V, bestand, v);
-			int L_store = initial_z[0].length;
-			// TODO übergebe Gurobi die mittels FFD ermittelte Startlösung
-			int storageCost = 0;
-			int disposalCost = 0;
-			try {
-				GRBEnv env = new GRBEnv();
-				GRBModel model = new GRBModel(env);
-				
-				// create variables
-				GRBVar[] x = new GRBVar[n];
-                for (int i = 0; i < n; i++) {                	
-            		x[i] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "x_"+i);	// wegwerfen
-            		x[i].set(GRB.DoubleAttr.Start, 0.0);
-                }           
-				GRBVar[] y = new GRBVar[L_store];
-                for (int j = 0; j < L_store; j++) {                	
-            		y[j] = model.addVar(0, 1, 0, GRB.BINARY, "y_"+j);	// Lager verwenden
-            		y[j].set(GRB.DoubleAttr.Start, 1.0);
-                }           
-				GRBVar[][] z = new GRBVar[n][L];
-                for (int i = 0; i < n; i++) {
-                	for (int j = 0; j < L_store; j++) {                	
-                		z[i][j] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
-                		z[i][j].set(GRB.DoubleAttr.Start, initial_z[i][j] * 1.0);
-                    }
-                }
-                
-                // create constraints 
-                GRBLinExpr expr = new GRBLinExpr();
-                for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
-           		for (int i = 0; i < n; i++) expr.addTerm(w[i], x[i]);
-   	      		model.addConstr(expr, GRB.LESS_EQUAL, capital - inst.getF(), "Kapitalschranke"); 
-   	      		
-   	      		for (int i = 0; i < n; i++) {
-	                expr = new GRBLinExpr();
-       	      		expr.addTerm(1.0, x[i]);    
-	                for (int j = 0; j < L_store; j++) expr.addTerm(1.0, z[i][j]);
-	   	      		model.addConstr(expr, GRB.GREATER_EQUAL, bestand[i], "alles, was nicht weggeworfen wird, einlagern"); 
-   	      		}
-   	      		
-   	      		for (int j = 0; j < L_store; j++) {
-	                expr = new GRBLinExpr();
-       	      		expr.addTerm(-1.0*V, y[j]);    
-	                for (int i = 0; i < n; i++) expr.addTerm(v[i], z[i][j]);
-	   	      		model.addConstr(expr, GRB.LESS_EQUAL, 0.0, "Lagervolumen und nur angemietete Lager"); 
-   	      		}
-                
-	   	      	for (int j = 0; j < L_store - 1; j++) {
-	       			GRBLinExpr exprLinks = new GRBLinExpr();
-	       			GRBLinExpr exprRechts = new GRBLinExpr();
-	       			exprLinks.addTerm(1, y[j]);
-	       			exprRechts.addTerm(1, y[j + 1]);
-	       			model.addConstr(exprLinks, GRB.GREATER_EQUAL, exprRechts, "Symmetrie verhindern");  
-	       		}
-	   	      	
-	   	      	// create objective
-	   	      	expr = new GRBLinExpr();
-       			for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
-       			for (int i = 0; i < n; i++) expr.addTerm(c[i] + w[i], x[i]);
-       			model.setObjective(expr, GRB.MINIMIZE);
-           		
-       			// optimize model
-       			model.set("MIPGap", "0");
-       			model.set("MIPGapAbs", "0.8");
-       			model.set("LogToConsole", "0");
-       			model.set("TimeLimit", "10");
-       			model.optimize();
-       			
-       			// check status codes
-       			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
-					System.out.println("Periode " + period + ": Lagerungsproblem unzulässig. Bankrott unumgänglich. Programmabbruch!");
-       				break;
-       			}
-       			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
-					System.out.println("Periode " + period + ": Zeitlimit erreicht. Verwende suboptimale Lösung (Lagerung). Bankrott in nächster Periode möglich.");
-       			}
-       			if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
-					System.out.println("Periode " + period + ": Optimale Lagerungsentscheidung gefunden.");
-       			}
-       			
-       			
-       			// get data from optimal solution
-       			if (model.get(GRB.IntAttr.SolCount) < 1) {
-       				System.out.println("Periode " + period + ": Keine zulässige Lösung für Lagerungsproblem innerhalb des Zeitlimits gefunden. Lagere nichts. Bankrott wahrscheinlich.");
-       				for (int i = 0; i < n; i++) {
-	       				disposalCost += w[i] * bestand[i];
-	       				bestand[i] = 0;
-       				}
-       			}
-       			else {
-       				int storageCount = 0;
-       				for (int j = 0; j < L_store; j++) {
-       					storageCount += Math.round(y[j].get(GRB.DoubleAttr.X));
-	       				storageCost += C * Math.round(y[j].get(GRB.DoubleAttr.X));
-	       			}
-       				storage = new int[storageCount][n];
-       				for (int j = 0; j < storageCount; j++) {
-       					for (int i = 0; i < n; i++) {
-       						storage[j][i] = (int) Math.round(z[i][j].get(GRB.DoubleAttr.X));
-       					}
-       				}
-	       			for (int i = 0; i < n; i++) {
-	       				disposalCost += w[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
-	       				bestand[i] -= (int) Math.round(x[i].get(GRB.DoubleAttr.X));
-	       			}
-       			}
-       			
-
-       			// dispose model
-       			model.dispose();
-       			env.dispose();
-			} catch (GRBException e) {
-				System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-	            e.printStackTrace();
-			}
+			if (demandModule.wasLastPeriod()) {
+				// es folgt KEINE weitere Periode. Entsorge kompletten Restbestand.
+				int disposalCost = 0;
+				for (int i = 0; i < n; i++) {
+					disposalCost += bestand[i] * w[i];
+					bestand[i] = 0;
+				}
+				capital -= disposalCost;
+				if (capital < 0) {
+					System.out.println("Periode " + period + ": Bankrott durch Entsorgung in letzter Periode.");
+					break;
+				}
+			} 
+			else {
+				// es folgt weitere Periode. Lagere oder entsorge Restbestand.
+				int[][] initial_z = FirstFitDecreasing.pack(V, bestand, v);
+				int L_store = initial_z[0].length;
+				int storageCost = 0;
+				int disposalCost = 0;
+				try {
+					GRBEnv env = new GRBEnv();
+					GRBModel model = new GRBModel(env);
 					
-			//update capital
-			capital -= storageCost;
-			capital -= disposalCost;
-			if (capital < 0) {
-				System.out.println("Periode " + period + ": Bankrott durch Lagerung und Entsorgung.");
-				break;
+					// create variables
+					GRBVar[] x = new GRBVar[n];
+	                for (int i = 0; i < n; i++) {                	
+	            		x[i] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "x_"+i);	// wegwerfen
+	            		x[i].set(GRB.DoubleAttr.Start, 0.0);
+	                }           
+					GRBVar[] y = new GRBVar[L_store];
+	                for (int j = 0; j < L_store; j++) {                	
+	            		y[j] = model.addVar(0, 1, 0, GRB.BINARY, "y_"+j);	// Lager verwenden
+	            		y[j].set(GRB.DoubleAttr.Start, 1.0);
+	                }           
+					GRBVar[][] z = new GRBVar[n][L];
+	                for (int i = 0; i < n; i++) {
+	                	for (int j = 0; j < L_store; j++) {                	
+	                		z[i][j] = model.addVar(0, bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
+	                		z[i][j].set(GRB.DoubleAttr.Start, initial_z[i][j] * 1.0);
+	                    }
+	                }
+	                
+	                // create constraints 
+	                GRBLinExpr expr = new GRBLinExpr();
+	                for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
+	           		for (int i = 0; i < n; i++) expr.addTerm(w[i], x[i]);
+	   	      		model.addConstr(expr, GRB.LESS_EQUAL, capital - inst.getF(), "Kapitalschranke"); 
+	   	      		
+	   	      		for (int i = 0; i < n; i++) {
+		                expr = new GRBLinExpr();
+	       	      		expr.addTerm(1.0, x[i]);    
+		                for (int j = 0; j < L_store; j++) expr.addTerm(1.0, z[i][j]);
+		   	      		model.addConstr(expr, GRB.GREATER_EQUAL, bestand[i], "alles, was nicht weggeworfen wird, einlagern"); 
+	   	      		}
+	   	      		
+	   	      		for (int j = 0; j < L_store; j++) {
+		                expr = new GRBLinExpr();
+	       	      		expr.addTerm(-1.0*V, y[j]);    
+		                for (int i = 0; i < n; i++) expr.addTerm(v[i], z[i][j]);
+		   	      		model.addConstr(expr, GRB.LESS_EQUAL, 0.0, "Lagervolumen und nur angemietete Lager"); 
+	   	      		}
+	                
+		   	      	for (int j = 0; j < L_store - 1; j++) {
+		       			GRBLinExpr exprLinks = new GRBLinExpr();
+		       			GRBLinExpr exprRechts = new GRBLinExpr();
+		       			exprLinks.addTerm(1, y[j]);
+		       			exprRechts.addTerm(1, y[j + 1]);
+		       			model.addConstr(exprLinks, GRB.GREATER_EQUAL, exprRechts, "Symmetrie verhindern");  
+		       		}
+		   	      	
+		   	      	// create objective
+		   	      	expr = new GRBLinExpr();
+	       			for (int j = 0; j < L_store; j++) expr.addTerm(C, y[j]);
+	       			for (int i = 0; i < n; i++) expr.addTerm(c[i] + w[i], x[i]);
+	       			model.setObjective(expr, GRB.MINIMIZE);
+	           		
+	       			// optimize model
+	       			model.set("MIPGap", "0");
+	       			model.set("MIPGapAbs", "0.8");
+	       			model.set("LogToConsole", "0");
+	       			model.set("TimeLimit", "10");
+	       			model.optimize();
+	       			
+	       			// check status codes
+	       			if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+						System.out.println("Periode " + period + ": Lagerungsproblem unzulässig. Bankrott unumgänglich. Programmabbruch!");
+	       				break;
+	       			}
+	       			if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+						System.out.println("Periode " + period + ": Zeitlimit erreicht. Verwende suboptimale Lösung (Lagerung). Bankrott in nächster Periode möglich.");
+	       			}
+	       			if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
+						System.out.println("Periode " + period + ": Optimale Lagerungsentscheidung gefunden.");
+	       			}
+	       			
+	       			
+	       			// get data from optimal solution
+	       			if (model.get(GRB.IntAttr.SolCount) < 1) {
+	       				System.out.println("Periode " + period + ": Keine zulässige Lösung für Lagerungsproblem innerhalb des Zeitlimits gefunden. Lagere nichts. Bankrott wahrscheinlich.");
+	       				for (int i = 0; i < n; i++) {
+		       				disposalCost += w[i] * bestand[i];
+		       				bestand[i] = 0;
+	       				}
+	       			}
+	       			else {
+	       				int storageCount = 0;
+	       				for (int j = 0; j < L_store; j++) {
+	       					storageCount += Math.round(y[j].get(GRB.DoubleAttr.X));
+		       				storageCost += C * Math.round(y[j].get(GRB.DoubleAttr.X));
+		       			}
+	       				storage = new int[storageCount][n];
+	       				for (int j = 0; j < storageCount; j++) {
+	       					for (int i = 0; i < n; i++) {
+	       						storage[j][i] = (int) Math.round(z[i][j].get(GRB.DoubleAttr.X));
+	       					}
+	       				}
+		       			for (int i = 0; i < n; i++) {
+		       				disposalCost += w[i] * Math.round(x[i].get(GRB.DoubleAttr.X));
+		       				bestand[i] -= (int) Math.round(x[i].get(GRB.DoubleAttr.X));
+		       			}
+	       			}
+	       			
+	
+	       			// dispose model
+	       			model.dispose();
+	       			env.dispose();
+				} catch (GRBException e) {
+					System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+		            e.printStackTrace();
+				}
+					
+				//update capital
+				capital -= storageCost;
+				capital -= disposalCost;
+				if (capital < 0) {
+					System.out.println("Periode " + period + ": Bankrott durch Lagerung und Entsorgung.");
+					break;
+				}
 			}
-			
 			
 			
 			
@@ -404,6 +417,8 @@ public class MainVaR{
 				System.out.print(bestand[i] + " ");
 			}
 			System.out.println();
+			
+			if (demandModule.wasLastPeriod()) break;
 		}
 		logWriter.schreibeKapital(K);
 		

@@ -100,27 +100,27 @@ public class DemandModule {
 		}
 	}
 	
-	private int[] getNewDemandFromWeb() {
-		return new int[0];
-	}
-	
-	
-	
-	
-	
-	public HashMap<Integer, ArrayList<Integer>> getPastDemands() {
-		return pastDemands;
-	}
-	
-	
-	
-	
 	public void closeBufferedReader() {
 		try {
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	private int[] getNewDemandFromWeb() {
+		return new int[0];
+	}
+	
+	
+	
+	public boolean wasLastPeriod() {
+		return (currentPeriod == numberOfPeriods);
+	}
+	
+	public HashMap<Integer, ArrayList<Integer>> getPastDemands() {
+		return pastDemands;
 	}
 	
 }
