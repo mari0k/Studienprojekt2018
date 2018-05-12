@@ -82,7 +82,6 @@ public class MainVaR{
 			
 			
 			
-			
 			/*
 			 * Produce products
 			 */
@@ -104,9 +103,9 @@ public class MainVaR{
                 for (int i = 0; i < n; i++) {                	
             		x[i] = model.addVar(0, b[i], 0, GRB.INTEGER, "x_"+i);	// produzieren
                 } 
-				GRBVar[] z = new GRBVar[n];
+				GRBVar[] s = new GRBVar[n];
                 for (int i = 0; i < n; i++) {                	
-            		z[i] = model.addVar(0, b[i] + bestand[i], 0, GRB.INTEGER, "z_"+i);	// verkaufen (geplant)
+            		s[i] = model.addVar(0, b[i] + bestand[i], 0, GRB.INTEGER, "s_"+i);	// verkaufen (geplant)
                 }           
 				GRBVar[] y = new GRBVar[L];
                 for (int j = 0; j < L; j++) {                	
@@ -116,10 +115,10 @@ public class MainVaR{
                 for (int i = 0; i < n; i++) {                	
             		t[i] = model.addVar(0, b[i] + bestand[i], 0, GRB.INTEGER, "t_"+i);	// wegwerfen (geplant)
                 }        
-				GRBVar[][] u = new GRBVar[n][L];
+				GRBVar[][] z = new GRBVar[n][L];
                 for (int i = 0; i < n; i++) {                	
                 	for (int j = 0; j < L; j++) {                	
-                		u[i][j] = model.addVar(0, b[i] + bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
+                		z[i][j] = model.addVar(0, b[i] + bestand[i], 0, GRB.INTEGER, "z_"+i+","+j);	// einlagern
                     }
                 }
                 
@@ -137,22 +136,22 @@ public class MainVaR{
 	   	      	for (int i = 0; i < n; i++) {
 	                expr = new GRBLinExpr();
 	   	      		expr.addTerm(-1.0, x[i]);
-	   	      		expr.addTerm(1.0, z[i]);
+	   	      		expr.addTerm(1.0, s[i]);
 	   	      		model.addConstr(expr, GRB.LESS_EQUAL, bestand[i], "nur vekaufen, was da ist"); 
 		      	}
 	   	      	
 	   	      	for (int i = 0; i < n; i++) {
 	                expr = new GRBLinExpr();
-	   	      		expr.addTerm(1.0, z[i]);
+	   	      		expr.addTerm(1.0, s[i]);
 	   	      		model.addConstr(expr, GRB.LESS_EQUAL, mean[i], "nur vekaufen, was in Erwartung nachgefragt wird"); 
 		      	}
    	      		
    	      		for (int i = 0; i < n; i++) {
 	                expr = new GRBLinExpr();
        	      		expr.addTerm(-1.0, x[i]);
-       	      		expr.addTerm(1.0, z[i]);
+       	      		expr.addTerm(1.0, s[i]);
        	      		expr.addTerm(1.0, t[i]);
-	                for (int j = 0; j < L; j++) expr.addTerm(1.0, u[i][j]);
+	                for (int j = 0; j < L; j++) expr.addTerm(1.0, z[i][j]);
 	   	      		model.addConstr(expr, GRB.GREATER_EQUAL, bestand[i], "kompletten Restbestand einlagern"); 
    	      		}
    	      		
@@ -160,14 +159,14 @@ public class MainVaR{
 	                expr = new GRBLinExpr();
        	      		expr.addTerm(-1.0, x[i]);
        	      		expr.addTerm(1.0, t[i]);
-	                for (int j = 0; j < L; j++) expr.addTerm(1.0, u[i][j]);
+	                for (int j = 0; j < L; j++) expr.addTerm(1.0, z[i][j]);
 	   	      		model.addConstr(expr, GRB.GREATER_EQUAL, bestand[i] - var[i], "einlagern, was mit W'keit rho übrig bleibt"); 
    	      		}
    	      		
    	      		for (int j = 0; j < L; j++) {
 	                expr = new GRBLinExpr();
        	      		expr.addTerm(-1.0*V, y[j]);    
-	                for (int i = 0; i < n; i++) expr.addTerm(v[i], u[i][j]);
+	                for (int i = 0; i < n; i++) expr.addTerm(v[i], z[i][j]);
 	   	      		model.addConstr(expr, GRB.LESS_EQUAL, 0.0, "Lagervolumen und nur angemietete Lager"); 
    	      		}
    	      		
@@ -175,7 +174,7 @@ public class MainVaR{
    	      		for (int i = 0; i < n; i++) {
        	      		expr.addTerm(c[i], x[i]);
 	                expr.addTerm(w[i], t[i]);
-	                expr.addTerm(-p[i], z[i]);
+	                expr.addTerm(-p[i], s[i]);
    	      		}
    	      		for (int j = 0; j < L; j++) expr.addTerm(C, y[j]);
 	   	      	model.addConstr(expr, GRB.LESS_EQUAL, capital - inst.getF(), "Kapitalschranke (Lagerung)");
@@ -192,7 +191,7 @@ public class MainVaR{
 	   	      	expr = new GRBLinExpr();
        			for (int j = 0; j < L; j++) expr.addTerm(-C, y[j]);
        			for (int i = 0; i < n; i++) {
-       				expr.addTerm(p[i], z[i]);
+       				expr.addTerm(p[i], s[i]);
        				expr.addTerm(-c[i], x[i]);
        				expr.addTerm(-(w[i] + c[i]), t[i]);
        			}
@@ -266,9 +265,11 @@ public class MainVaR{
 			/*
 			 * Store or dispose products that were not sold
 			 */
+			int storageCost = 0;
+			int disposalCost = 0;
 			if (demandModule.wasLastPeriod()) {
 				// es folgt KEINE weitere Periode. Entsorge kompletten Restbestand.
-				int disposalCost = 0;
+				storage = new int[0][0];
 				for (int i = 0; i < n; i++) {
 					disposalCost += bestand[i] * w[i];
 					bestand[i] = 0;
@@ -283,8 +284,6 @@ public class MainVaR{
 				// es folgt weitere Periode. Lagere oder entsorge Restbestand.
 				int[][] initial_z = FirstFitDecreasing.pack(V, bestand, v);
 				int L_store = initial_z[0].length;
-				int storageCost = 0;
-				int disposalCost = 0;
 				try {
 					GRBEnv env = new GRBEnv();
 					GRBModel model = new GRBModel(env);
