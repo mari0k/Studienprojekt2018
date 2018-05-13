@@ -4,14 +4,12 @@ public class MainBasisModell {
 
 	public static void main(String[] args) {
 		String instanceName = null;
-		double rho = 0.8;
 		boolean deminfo = true;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables
 		 */
 		switch (args.length) {
-			case 3: deminfo = Boolean.parseBoolean(args[2]);
-			case 2: rho = Double.parseDouble(args[1]); 
+			case 2: deminfo = Boolean.parseBoolean(args[1]);
 			case 1: instanceName = args[0]; break;
 			default: instanceName = "kleineInstanz"; break;
 		}
@@ -19,11 +17,10 @@ public class MainBasisModell {
 		
 		
 		/*
-		 * Read instance data and initialize DemandModule, ValueAtRisk and LogWriter
+		 * Read instance data and initialize DemandModule and LogWriter
 		 */
 		Instance inst = new Instance(instanceName, deminfo);
 		DemandModule demandModule = new DemandModule(instanceName, inst.getN());
-		ValueAtRisk VaR = new ValueAtRisk(rho);
 		LogWriter logWriter = new LogWriter("./instances/", instanceName + ".log");
 		long Kapital = inst.getS();
 		
@@ -55,9 +52,6 @@ public class MainBasisModell {
 		if (inst.isKnownDistributions()) {
 			mean = inst.getMean();
 			sd = inst.getSd();
-			for (int i = 0; i < n; i++) {
-				var[i] = (int) Math.max(0, Math.ceil(VaR.computeVaR(mean[i], sd[i])));
-			}
 		}
 		
 		

@@ -8,7 +8,7 @@ import java.security.SecureRandom;
  * Data is written in files
  *   instance_name.in			static problem parameters such as Startkapital, Fixkosten, Lagervolumen, Lagerkosten, ...  
  *   instance_name.deminfo		static information about the distribution of demand
- *   instance_name.dem			the actual demand, which is distributed consistent to information given in instance_name.deminfo
+ *   instance_name.dem			the actual demand, that is distributed consistent to information given in instance_name.deminfo
  */
 
 public class RandomInstanceGenerator {
@@ -17,19 +17,23 @@ public class RandomInstanceGenerator {
 		SecureRandom rand = new SecureRandom();
 		
 		String instanceName = null;
-		int numberOfProducts = rand.nextInt(20) + 10;
-		int numberOfPeriods = rand.nextInt(800) + 20;
-		int startCapital = rand.nextInt(80000) + 20000;
-		int fixcost = rand.nextInt(Math.min(10000, startCapital/2)) + 100;
+		boolean schwer = true;
+		int numberOfProducts = rand.nextInt(8) + 5;
+		int numberOfPeriods = rand.nextInt(200) + 500;
+		int startCapital = rand.nextInt(8000) + 2000;
+		int fixcost = rand.nextInt(Math.min(2000, startCapital/2)) + 1000;
 		int storeVolume = rand.nextInt(600) + 100;
-		int storeCost = rand.nextInt(startCapital/20) + 20;
+		int storeCost = rand.nextInt(startCapital/10) + 500;
 		
 		// Check if Arguments are given and overwrite the corresponding randomly generated numbers
 		switch (args.length) {
-			case 5: fixcost = Integer.parseInt(args[4]);
-			case 4: startCapital = Integer.parseInt(args[3]);
-			case 3: numberOfPeriods = Integer.parseInt(args[2]);
-			case 2: numberOfProducts = Integer.parseInt(args[1]); 
+			case 8: storeVolume = Integer.parseInt(args[7]);
+			case 7: storeCost = Integer.parseInt(args[6]);
+			case 6: fixcost = Integer.parseInt(args[5]);
+			case 5: startCapital = Integer.parseInt(args[4]);
+			case 4: numberOfPeriods = Integer.parseInt(args[3]);
+			case 3: numberOfProducts = Integer.parseInt(args[2]); 
+			case 2: schwer = Boolean.parseBoolean(args[1]);
 			case 1: instanceName = args[0]; break;
 			default: instanceName = "instance"+rand.nextInt(100); break;
 		}
@@ -45,13 +49,34 @@ public class RandomInstanceGenerator {
 		
 		// generate static instance parameters
 		for (int i = 0; i < numberOfProducts; i++) {
-			productionConstraint[i] = rand.nextInt(100);
-			productionCost[i] = rand.nextInt(100);
-			sellValue[i] = rand.nextInt(200) + productionCost[i];
-			volume[i] = rand.nextInt(storeVolume/3 + 1) + 1;
-			disposalCost[i] = (int) (rand.nextInt((int) ((sellValue[i] - productionCost[i])*0.9) + 1) + productionCost[i]*0.9);
-			demandMean[i] = (int) (rand.nextInt((int) (productionConstraint[i]*0.5) + 1) + productionConstraint[i]*0.9);
-			demandStandardDeviation[i] = rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1));
+			double helper = rand.nextDouble();
+			while (helper < 0.5) {
+				helper = rand.nextDouble();
+			}
+			int helper2 = 0;
+			if (schwer && rand.nextDouble() < 0.5) {
+				helper2 = 1;
+			}
+			
+			
+			// production cost
+			productionCost[i] = (int) Math.round(rand.nextInt((int) Math.round(fixcost / numberOfProducts)) + 1 + helper2 * fixcost / numberOfProducts);
+			
+			// sell price
+			sellValue[i] = (int) Math.round(helper * rand.nextInt((int) Math.round(helper * productionCost[i])) + 1 + helper2 * productionCost[i]);
+			
+			// volume
+			volume[i] = (int) Math.round(Math.min(0.7 * storeVolume, rand.nextInt((int) Math.round(helper * storeVolume) + 1) + 1 + helper2 * Math.min(0.3 * (1 - helper) * storeVolume, 100)));
+			
+			// disposal cost
+			disposalCost[i] = (int) Math.round(rand.nextInt((int) Math.round(helper * 0.5 * productionCost[i])) + 1 + helper2 * (0.8 * storeCost * volume[i]) / storeVolume);
+			
+			// production constraint
+			productionConstraint[i] = (int) Math.round(rand.nextInt((int) Math.round((2.0 * startCapital) / productionCost[i])));
+			
+			// demand: mean and standard deviation
+			demandMean[i] = (int) (rand.nextInt((int) (helper * productionConstraint[i]) + 1) + helper * productionConstraint[i]);
+			demandStandardDeviation[i] = (int) Math.round(rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1)) + helper * rand.nextInt(6));
 		}
 		
 		int[][] demand = new int[numberOfPeriods][numberOfProducts];
@@ -62,7 +87,7 @@ public class RandomInstanceGenerator {
 				int d = -1;
 				int k = 0;
 				while(k++ < 10 && d < 0) {	// 10 tries to generate random number that is not negative
-					d = (int) Math.round(rand.nextGaussian()*demandStandardDeviation[i]+demandMean[i]);	// normal distributed random number
+					d = (int) Math.round(rand.nextGaussian() * demandStandardDeviation[i] + demandMean[i]);	// normal distributed random number
 				}
 				demand[j][i] = Math.max(0, d);
 			}
