@@ -118,7 +118,7 @@ public class RandomInstanceGenerator {
 			bw.write(numberOfProducts+"");
 			bw.newLine();
 			for (int i = 0; i < numberOfProducts; i ++) {
-				bw.write(demandMean[i] + " " + demandStandardDeviation[i]);
+				bw.write(demandMean[i] + " " + (demandStandardDeviation[i] * demandStandardDeviation[i]));
 				bw.newLine();
 			}
 			

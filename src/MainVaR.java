@@ -50,7 +50,7 @@ public class MainVaR{
 			bestand[i] = 0;
 		}
 		int[] mean = new int[n];
-		int[] sd = new int[n];
+		double[] sd = new double[n];
 		int[] var = new int[n];
 		if (inst.isKnownDistributions()) {
 			mean = inst.getMean();

@@ -21,7 +21,7 @@ public class Instance {
 	private int[] b = {};
 	
 	private int[] mean = {};
-	private int[] sd = {};
+	private double[] sd = {};
 
 	public Instance(String instanceName, boolean knownDistributions) {
 		this.instanceName = instanceName;
@@ -72,13 +72,13 @@ public class Instance {
             assert Integer.parseInt(line) == n: "Fehlerhafte Instanz! Anzahl Produkttypen stimmt nicht überein.";
 
             mean = new int[n];
-            sd = new int[n];
+            sd = new double[n];
 
             for (int i = 0; i < n; i++) {
             	line = br.readLine();
             	String[] lineValues = line.split(delims);
             	mean[i] = Integer.parseInt(lineValues[0]);
-            	sd[i] = Integer.parseInt(lineValues[1]);
+            	sd[i] = Math.sqrt(Integer.parseInt(lineValues[1]));
             }
             br.close();
         }
@@ -208,12 +208,12 @@ public class Instance {
 		this.mean = mean;
 	}
 
-	public int[] getSd() {
+	public double[] getSd() {
 		assert knownDistributions: "Fehler! Standardabweichung abgefragt, aber nicht bekannt.";
 		return sd;
 	}
 	
-	public void setSd(int[] sd) {
+	public void setSd(double[] sd) {
 		assert knownDistributions: "Fehler! Standardabweichung soll gesetzt werden, aber Instanz mit unbekannten Verteilungen.";
 		this.sd = sd;
 	}

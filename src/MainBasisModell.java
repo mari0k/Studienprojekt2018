@@ -47,8 +47,7 @@ public class MainBasisModell {
 			bestand[i] = 0;
 		}
 		int[] mean = new int[n];
-		int[] sd = new int[n];
-		int[] var = new int[n];
+		double[] sd = new double[n];
 		if (inst.isKnownDistributions()) {
 			mean = inst.getMean();
 			sd = inst.getSd();
