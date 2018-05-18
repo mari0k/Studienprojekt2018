@@ -1,3 +1,13 @@
+/*
+ * ACHTUNG: diese Klasse, sowie die Klassen
+ * "Bin" und "Element" muessen dringend bearbeitet
+ * werden. Das Berechnen einer oberen Schranke fuer
+ * die Anzahl der benoetigten Lager mittels
+ * First Fit Decreasing funktioniert jedoch
+ * eindwandfrei.
+ */
+
+
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -236,6 +246,11 @@ public class BinPacking {
 			System.exit(0);
 		}
 		return besteLoesung.size();
+	}
+
+
+	public LinkedList<Bin> getBesteLoesung() {
+		return besteLoesung;
 	}
 	
 }
