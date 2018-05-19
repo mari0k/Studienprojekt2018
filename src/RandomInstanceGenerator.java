@@ -3,6 +3,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.SecureRandom;
 
+
+
 /*
  * This Class generates random instances of the given problem.
  * Data is written in files
@@ -44,7 +46,7 @@ public class RandomInstanceGenerator {
 		int[] volume = new int[numberOfProducts];
 		int[] disposalCost = new int[numberOfProducts];
 		int[] demandMean = new int[numberOfProducts];
-		int[] demandStandardDeviation = new int[numberOfProducts];
+		int[] demandVariance = new int[numberOfProducts];
 		
 		
 		// generate static instance parameters
@@ -74,9 +76,9 @@ public class RandomInstanceGenerator {
 			// production constraint
 			productionConstraint[i] = (int) Math.round(rand.nextInt((int) Math.round((2.0 * startCapital) / productionCost[i])));
 			
-			// demand: mean and standard deviation
+			// demand: mean and variance
 			demandMean[i] = (int) (rand.nextInt((int) (helper * productionConstraint[i]) + 1) + helper * productionConstraint[i]);
-			demandStandardDeviation[i] = (int) Math.round(rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1)) + helper * rand.nextInt(6));
+			demandVariance[i] = (int) Math.round((rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1)) + helper * rand.nextInt(6)) / 3.0);
 		}
 		
 		int[][] demand = new int[numberOfPeriods][numberOfProducts];
@@ -87,7 +89,7 @@ public class RandomInstanceGenerator {
 				int d = -1;
 				int k = 0;
 				while(k++ < 10 && d < 0) {	// 10 tries to generate random number that is not negative
-					d = (int) Math.round(rand.nextGaussian() * demandStandardDeviation[i] + demandMean[i]);	// normal distributed random number
+					d = (int) Math.round(rand.nextGaussian() * Math.round(demandVariance[i]) + demandMean[i]);	// normal distributed random number
 				}
 				demand[j][i] = Math.max(0, d);
 			}
@@ -118,7 +120,7 @@ public class RandomInstanceGenerator {
 			bw.write(numberOfProducts+"");
 			bw.newLine();
 			for (int i = 0; i < numberOfProducts; i ++) {
-				bw.write(demandMean[i] + " " + (demandStandardDeviation[i] * demandStandardDeviation[i]));
+				bw.write(demandMean[i] + " " + demandVariance[i]);
 				bw.newLine();
 			}
 			
