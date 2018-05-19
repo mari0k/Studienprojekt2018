@@ -78,7 +78,7 @@ public class RandomInstanceGenerator {
 			
 			// demand: mean and variance
 			demandMean[i] = (int) (rand.nextInt((int) (helper * productionConstraint[i]) + 1) + helper * productionConstraint[i]);
-			demandVariance[i] = (int) Math.round((rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1)) + helper * rand.nextInt(6)) / 3.0);
+			demandVariance[i] = (int) Math.round((rand.nextInt(Math.min(productionConstraint[i] + 1, demandMean[i] + 1)) + helper * rand.nextInt(6)) / 1.5);
 		}
 		
 		int[][] demand = new int[numberOfPeriods][numberOfProducts];
@@ -89,7 +89,7 @@ public class RandomInstanceGenerator {
 				int d = -1;
 				int k = 0;
 				while(k++ < 10 && d < 0) {	// 10 tries to generate random number that is not negative
-					d = (int) Math.round(rand.nextGaussian() * Math.round(demandVariance[i]) + demandMean[i]);	// normal distributed random number
+					d = (int) Math.round(rand.nextGaussian() * Math.sqrt(demandVariance[i]) + demandMean[i]);	// normal distributed random number
 				}
 				demand[j][i] = Math.max(0, d);
 			}
