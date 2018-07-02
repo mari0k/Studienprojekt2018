@@ -2,7 +2,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Neos {
+public class Ddsip {
 	
 	public static void model_lp(Instance instance, int[][] szenarien, int[] a, int kapital) {
 		try {
@@ -135,7 +135,7 @@ public class Neos {
 	
 
 	
-	public static void ddsip_conf(int n, String instanceName) {
+	public static void ddsip_conf(int n, int d, String instanceName) {
 		try {
             BufferedWriter bw = new BufferedWriter (new FileWriter("./neos/ddsip_" + instanceName + ".conf"));
 
@@ -143,7 +143,8 @@ public class Neos {
 			bw.newLine();
 			bw.write("PREFIX _1_");
 			bw.newLine();
-			bw.write("SCENAR 2");
+			bw.write("SCENAR ");
+			bw.write(String.valueOf(d));
 			bw.newLine();
 			bw.write("STOCRHS ");
 			bw.write(String.valueOf(n));
@@ -175,7 +176,7 @@ public class Neos {
 		
 		rhs_sc(szenarien, instance.getInstanceName());
 		
-		ddsip_conf(szenarien[0].length, instance.getInstanceName());
+		ddsip_conf(szenarien[0].length, szenarien.length, instance.getInstanceName());
 		
 	}
 
