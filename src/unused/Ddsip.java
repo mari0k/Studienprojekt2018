@@ -7,7 +7,7 @@ public class Ddsip {
 	
 	public static void model_lp(Instance instance, int[][] szenarien, int[] a, int kapital) {
 		try {
-            BufferedWriter bw = new BufferedWriter (new FileWriter("./neos/model_" + instance.getInstanceName() + ".lp"));
+            BufferedWriter bw = new BufferedWriter (new FileWriter("./ddsip_files/model_" + instance.getInstanceName() + ".lp"));
 
 			bw.write("maximize");
 			bw.newLine();
@@ -108,7 +108,7 @@ public class Ddsip {
 	
 	public static void rhs_sc(int[][] szenarien, String instanceName) {
 		try {
-            BufferedWriter bw = new BufferedWriter (new FileWriter("./neos/rhs_" + instanceName + ".sc"));
+            BufferedWriter bw = new BufferedWriter (new FileWriter("./ddsip_files/rhs_" + instanceName + ".sc"));
 
 			bw.write("Names");
 			bw.newLine();
@@ -138,7 +138,7 @@ public class Ddsip {
 	
 	public static void ddsip_conf(int n, int d, String instanceName) {
 		try {
-            BufferedWriter bw = new BufferedWriter (new FileWriter("./neos/ddsip_" + instanceName + ".conf"));
+            BufferedWriter bw = new BufferedWriter (new FileWriter("./ddsip_files/ddsip_" + instanceName + ".conf"));
 
 			bw.write("BEGIN");
 			bw.newLine();
