@@ -3,8 +3,6 @@ import java.util.Random;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class LHS {
-	
-	static int anzahlPermutationsSchleifenDurchlaeufe = 5;
 
 	public static double[] lhs(int n) {
 		return lhs(n, 1)[0];
@@ -30,14 +28,12 @@ public class LHS {
 		// array-Spalten permutieren
 		int helperIndex;
 		double helperValue;
-		for (int k = 0; k < anzahlPermutationsSchleifenDurchlaeufe; k++) {
-			for (int j = 0; j < n; j++) {
-				for (int i = 0; i < d; i++) {
-					helperIndex = rand.nextInt(d);
-					helperValue = array[i][j];
-					array[i][j] = array[helperIndex][j];
-					array[helperIndex][j] = helperValue;
-				}
+		for (int j = 0; j < n; j++) {
+			for (int i = 0; i < d; i++) {
+				helperIndex = rand.nextInt(d);
+				helperValue = array[i][j];
+				array[i][j] = array[helperIndex][j];
+				array[helperIndex][j] = helperValue;
 			}
 		}
 		
