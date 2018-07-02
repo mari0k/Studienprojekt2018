@@ -75,14 +75,14 @@ public class LHS {
 	/*
 	 * statische Funktion zur Erzeugung eines NORMALVERTEILTEN Latin Hypercube Samplings mit Quantilen aus dem Intervall (0, 1)
 	 */
-	public static int[][] normal_lhs(int d, double[] mean, double[] variance) {
+	public static int[][] normal_lhs(int d, int[] mean, int[] variance) {
 		return normal_lhs(d, mean, variance, 0, 1);
 	}
 	
 	/*
 	 * statische Funktion zur Erzeugung eines NORMALVERTEILTEN Latin Hypercube Sampling mit Quantilen aus dem Intervall (a, b) subset (0, 1)
 	 */
-	public static int[][] normal_lhs(int d, double[] mean, double[] variance, double a, double b) {
+	public static int[][] normal_lhs(int d, int[] mean, int[] variance, double a, double b) {
 		// konsistenz der Intervallgrenzen sicherstellen
 		if (a < b) {
 			double temp = b;
