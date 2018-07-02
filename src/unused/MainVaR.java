@@ -1,3 +1,6 @@
+package unused;
+import Instance;
+import LogWriter;
 import gurobi.*;
 
 public class MainVaR{
