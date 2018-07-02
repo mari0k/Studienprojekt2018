@@ -1,17 +1,17 @@
-package binPacking;
+package unused;
 
 import java.io.IOException;
 import java.util.*;
 import gurobi.*;
 
-public class SolverGurobi {
+public class binPackingGurobiSolver {
 
-	public static void solveBinPacking(double[] zahlen, double binGroeße) throws IOException, GRBException {
+	public static void solveBinPacking(double[] zahlen, double binGroesse) throws IOException, GRBException {
 
 		int n = zahlen.length;
 
 		for (int i = 0; i < n; i++) {
-			if (zahlen[i] > binGroeße) {
+			if (zahlen[i] > binGroesse) {
 				System.out.println("Falsche Eingabe");
 				return;
 			}
@@ -57,7 +57,7 @@ public class SolverGurobi {
 				model.addConstr(expr, GRB.EQUAL, 1.0, "1.1" + i );
 			}
 
-			// Add constraint: Bin Kapazität
+			// Add constraint: Bin Kapazitï¿½t
 
 			for (int j = 0; j < n; j++) {
 				expr = new GRBLinExpr();
@@ -66,7 +66,7 @@ public class SolverGurobi {
 					expr.addTerm(zahlen[i], t[i][j]);
 
 				}
-				model.addConstr(expr, GRB.LESS_EQUAL, binGroeße, "Bin Grenze eingehalten Bin" + j);
+				model.addConstr(expr, GRB.LESS_EQUAL, binGroesse, "Bin Grenze eingehalten Bin" + j);
 			}
 
 			// Add constraint: Bin genutzt
