@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class FirstFitDecreasing {
 	
 	public static int[][] pack(int binSize, int[] bestand, int[] v) {
-		ArrayList<Bin> bins = new ArrayList<>();
+		ArrayList<BinFFD> bins = new ArrayList<>();
 		Item[] items = new Item[bestand.length];
 		for (int i = 0; i < bestand.length; i++) {
 			items[i] = new Item(i, bestand[i], v[i]);
@@ -15,7 +15,7 @@ public class FirstFitDecreasing {
 		for (int i = 0; i < items.length; i++) {
 			while (items[i].getAmount() > 0) {
 				boolean newBinNeeded = true;
-				for (Bin bin : bins) {
+				for (BinFFD bin : bins) {
 					items[i].setAmount(items[i].getAmount() - bin.addAsManyAsPossible(items[i]));
 					if (items[i].getAmount() == 0) {
 						newBinNeeded = false;
@@ -23,7 +23,7 @@ public class FirstFitDecreasing {
 					}
 				}
 				while (newBinNeeded) {
-					Bin bin = new Bin(binSize);
+					BinFFD bin = new BinFFD(binSize);
 					items[i].setAmount(items[i].getAmount() - bin.addAsManyAsPossible(items[i]));
 					bins.add(bin);
 					if (items[i].getAmount() == 0) newBinNeeded = false;
@@ -38,7 +38,7 @@ public class FirstFitDecreasing {
 			}
 		}
 		int counter = 0;
-		for (Bin bin : bins) {
+		for (BinFFD bin : bins) {
 			for (int i : bin.getContent().keySet()) {
 				returnArray[i][counter] = bin.getContent().get(i);
 			}
@@ -50,12 +50,12 @@ public class FirstFitDecreasing {
 
 }
 
-class Bin {
+class BinFFD {
 	
 	private int free;
 	private HashMap<Integer, Integer> content;
 	
-	public Bin(int size) {
+	public BinFFD(int size) {
 		this.free = size;
 		this.content = new HashMap<>();
 	}
