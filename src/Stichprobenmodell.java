@@ -10,6 +10,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import logging.LogWriter;
 
 public class Stichprobenmodell {
 

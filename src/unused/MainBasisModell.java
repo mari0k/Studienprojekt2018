@@ -1,7 +1,6 @@
 package unused;
-import Instance;
-import LogWriter;
 import gurobi.*;
+import logging.LogWriter;
 
 public class MainBasisModell {
 
