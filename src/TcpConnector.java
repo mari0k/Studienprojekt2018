@@ -43,6 +43,15 @@ public class TcpConnector{
 	 * Grunddaten des Problems abfragen und als Instanz-Objekt an Loeser weitergeben
 	 */
 	public Instanz frageGrunddatenAb() throws Exception{
+		// warten bis Server Daten gesendet hat
+		int attempts = 0;
+        while(input.available() == 0 && attempts < 3000)
+        {
+            attempts++;
+            Thread.sleep(10); // 0.01 Sekunde
+        }
+        
+        // vom Server gesendete Daten lesen
 		int startkapital = input.readInt();
 		int perioden = input.readInt();
 		int produkte = input.readInt();
@@ -85,22 +94,28 @@ public class TcpConnector{
 	 * Produktionsentscheidung der ersten Periode an Server schicken und aktuellen Bestand in inst aktualisieren
 	 */
 	public void sendeProduktionsentscheidungDerErstenPeriode(Instanz inst, int[] produktion) throws Exception{
-		// Fuer jedes Produkt Produktionsmenge
+		// Fuer jedes Produkt Produktionsmenge senden
 	    for (int i = 0; i < produktion.length; i++) {
 	    	output.writeInt(produktion[i]);
 	    }
 	    output.flush();
 	    
+	    // warten bis Server Daten gesendet hat
+ 		int attempts = 0;
+        while(input.available() == 0 && attempts < 3000)
+        {
+            attempts++;
+            Thread.sleep(10); // 0.01 Sekunde
+        }
+         
+        // vom Server gesendete Daten lesen
 	    int kapital = input.readInt();
 	    int[] ueberschuss = new int[inst.produkte];
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = input.readInt();
 	    }
 	    
-	    if(kapital != inst.aktuellesKapital) {
-	    	System.out.println("Fehler in der Kapitalberechnung");
-	    	inst.aktuellesKapital = kapital;
-	    }
+	    inst.aktuellesKapital = kapital;
 	    inst.aktuellerBestand = ueberschuss.clone();
 	}
 	
@@ -108,30 +123,36 @@ public class TcpConnector{
 	 * Lager- und Produktionsentscheidung an Server schicken und aktuellen Bestand in inst aktualisieren
 	 */
 	public void sendeEntscheidungen(Instanz inst, int[][] lagerung, int[] produktion) throws Exception{
-		// Anzahl verwendeter Lager
+		// Anzahl verwendeter Lager senden
 		output.writeInt(lagerung.length);
-		// Fuer jedes Lager Array mit Lagermenge von jedem Produkt
+		// Fuer jedes Lager Array mit Lagermenge von jedem Produkt senden
 		for (int k = 0; k < lagerung.length; k++) {
 			for (int i = 0; i < lagerung[k].length; i++) {
 		    	output.writeInt(lagerung[k][i]);
 		    }
 	    }
-		// Fuer jedes Produkt Produktionsmenge
+		// Fuer jedes Produkt Produktionsmenge senden
 	    for (int i = 0; i < produktion.length; i++) {
 	    	output.writeInt(produktion[i]);
 	    }
 	    output.flush();
 	    
+	    // warten bis Server Daten gesendet hat
+ 		int attempts = 0;
+        while(input.available() == 0 && attempts < 3000)
+        {             
+        	attempts++;
+            Thread.sleep(10); // 0.01 Sekunde
+        }
+        
+        // vom Server gesendete Daten lesen
 	    int kapital = input.readInt();
 	    int[] ueberschuss = new int[inst.produkte];
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = input.readInt();
 	    }
 	    
-	    if(kapital != inst.aktuellesKapital) {
-	    	System.out.println("Fehler in der Kapitalberechnung");
-	    	inst.aktuellesKapital = kapital;
-	    }
+	    inst.aktuellesKapital = kapital;
 	    inst.aktuellerBestand = ueberschuss.clone();
 	}
 }
