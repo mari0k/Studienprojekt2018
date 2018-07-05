@@ -11,6 +11,8 @@ public class TcpConnector{
 	private String serverName;
 	private int port;
 	private Socket socket;
+	private DataOutputStream output;
+	private DataInputStream input;
 	
 	public TcpConnector(String serverName, int port){
 		this.serverName = serverName;
@@ -22,16 +24,18 @@ public class TcpConnector{
 	 */
 	public void establishConnection(String unserName) throws Exception{
 	    this.socket = new Socket(serverName, port);
-	    DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+	    this.output = new DataOutputStream(socket.getOutputStream());
+	    this.input = new DataInputStream(socket.getInputStream());
 	    output.writeBytes(unserName);
 	    output.flush();
-	    output.close();
 	}
 	
 	/*
 	 * Verbindung zum Server trennen
 	 */
 	public void closeConnection() throws Exception{
+		output.close();
+		input.close();
 	    socket.close();
 	}
 	
@@ -39,8 +43,6 @@ public class TcpConnector{
 	 * Grunddaten des Problems abfragen und als Instanz-Objekt an Loeser weitergeben
 	 */
 	public Instanz frageGrunddatenAb() throws Exception{
-		DataInputStream input = new DataInputStream(socket.getInputStream());
-		
 		int startkapital = input.readInt();
 		int perioden = input.readInt();
 		int produkte = input.readInt();
@@ -83,21 +85,17 @@ public class TcpConnector{
 	 * Produktionsentscheidung der ersten Periode an Server schicken und aktuellen Bestand in inst aktualisieren
 	 */
 	public void sendeProduktionsentscheidungDerErstenPeriode(Instanz inst, int[] produktion) throws Exception{
-		DataOutputStream output = new DataOutputStream(socket.getOutputStream());
 		// Fuer jedes Produkt Produktionsmenge
 	    for (int i = 0; i < produktion.length; i++) {
 	    	output.writeInt(produktion[i]);
 	    }
 	    output.flush();
-	    output.close();
 	    
-	    DataInputStream input = new DataInputStream(socket.getInputStream());
 	    int kapital = input.readInt();
 	    int[] ueberschuss = new int[inst.produkte];
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = input.readInt();
 	    }
-	    input.close();
 	    
 	    if(kapital != inst.aktuellesKapital) {
 	    	System.out.println("Fehler in der Kapitalberechnung");
@@ -110,7 +108,6 @@ public class TcpConnector{
 	 * Lager- und Produktionsentscheidung an Server schicken und aktuellen Bestand in inst aktualisieren
 	 */
 	public void sendeEntscheidungen(Instanz inst, int[][] lagerung, int[] produktion) throws Exception{
-		DataOutputStream output = new DataOutputStream(socket.getOutputStream());
 		// Anzahl verwendeter Lager
 		output.writeInt(lagerung.length);
 		// Fuer jedes Lager Array mit Lagermenge von jedem Produkt
@@ -124,15 +121,12 @@ public class TcpConnector{
 	    	output.writeInt(produktion[i]);
 	    }
 	    output.flush();
-	    output.close();
 	    
-	    DataInputStream input = new DataInputStream(socket.getInputStream());
 	    int kapital = input.readInt();
 	    int[] ueberschuss = new int[inst.produkte];
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = input.readInt();
 	    }
-	    input.close();
 	    
 	    if(kapital != inst.aktuellesKapital) {
 	    	System.out.println("Fehler in der Kapitalberechnung");
