@@ -1,4 +1,4 @@
-package src;
+
 public class Instanz {
 
 	public int startkapital;

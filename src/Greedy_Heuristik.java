@@ -1,4 +1,3 @@
-package src;
 
 import java.util.*;
 
@@ -8,10 +7,6 @@ public class Greedy_Heuristik {
 	static boolean alleProdukteBetrachtet;
 	static int[] globaleProduktion;
 
-	public Greedy_Heuristik(Instanz inst) {
-		this.produktBetrachtet = new boolean[inst.produkte];
-		this.alleProdukteBetrachtet = false;
-	}
 
 	public static void main(String[] args) {
 		int n = 3;
@@ -66,22 +61,22 @@ public class Greedy_Heuristik {
 
 	public static void greedyHeuristik(Instanz inst, int[] produktion, double aktuellerGewinn, int[][] szenarien,
 			int[] lagerBestand, int aktuellesProdukt, double[] wahrscheinlichkeiten, LinkedList<Produkt> produkte,
-			double verfügbaresKapital) {
+			double verfuegbaresKapital) {
 
 		int produktIndex = produkte.get(aktuellesProdukt).getIndex();
 		int n = inst.produkte;
 		int[] ausgabe = new int[n];
-		int[] nächsteProduktion = produktion.clone();
-		nächsteProduktion[produktIndex] += 1;
+		int[] naechsteProduktion = produktion.clone();
+		naechsteProduktion[produktIndex] += 1;
 
-		double nächsterGewinn = berechneGewinnGlobal(inst, nächsteProduktion, szenarien, wahrscheinlichkeiten,
+		double naechsterGewinn = berechneGewinnGlobal(inst, naechsteProduktion, szenarien, wahrscheinlichkeiten,
 				lagerBestand);
 
-		if (nächsterGewinn > aktuellerGewinn & produktionMoeglich(inst, nächsteProduktion, verfügbaresKapital)) {
-			greedyHeuristik(inst, nächsteProduktion, nächsterGewinn, szenarien, lagerBestand, aktuellesProdukt,
-					wahrscheinlichkeiten, produkte, verfügbaresKapital);
+		if (naechsterGewinn > aktuellerGewinn & produktionMoeglich(inst, naechsteProduktion, verfuegbaresKapital)) {
+			greedyHeuristik(inst, naechsteProduktion, naechsterGewinn, szenarien, lagerBestand, aktuellesProdukt,
+					wahrscheinlichkeiten, produkte, verfuegbaresKapital);
 		} else {
-			nächsteProduktion = produktion.clone();
+			naechsteProduktion = produktion.clone();
 			produktBetrachtet[produktIndex] = true;
 			alleProdukteBetrachtet = true;
 			for (int i = 0; i < n; i++) {
@@ -95,14 +90,14 @@ public class Greedy_Heuristik {
 				System.out.println(produkte.get(aktuellesProdukt + 1).getIndex());
 				aktuellesProdukt++;
 				greedyHeuristik(inst, produktion, aktuellerGewinn, szenarien, lagerBestand, aktuellesProdukt,
-						wahrscheinlichkeiten, produkte, verfügbaresKapital);
+						wahrscheinlichkeiten, produkte, verfuegbaresKapital);
 			} else {
 				globaleProduktion=produktion.clone();
 			}
 		}
 	}
 
-	public static boolean produktionMoeglich(Instanz inst, int[] produktion, double verfügbaresKapital) {
+	public static boolean produktionMoeglich(Instanz inst, int[] produktion, double verfuegbaresKapital) {
 		int n = inst.produkte;
 		double produktionsKosten = 0;
 
@@ -112,7 +107,7 @@ public class Greedy_Heuristik {
 				return false;
 			}
 		}
-		if (produktionsKosten < verfügbaresKapital) {
+		if (produktionsKosten < verfuegbaresKapital) {
 			return true;
 		} else {
 			return false;
