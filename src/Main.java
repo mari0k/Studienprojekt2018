@@ -12,10 +12,10 @@ public class Main {
 		/*
 		 * wichtige Parameter setzen
 		 */
-		String unserName = "mario.kayser@tu-dortmund.de";
+		String unserName = "unser Teamname";
 		int zeitProPeriode = 29;	// Zeit pro Periode in Sekunden
-		String serverName = "129.217.165.242";
-		int serverPort = 22133;
+		String serverName = "server IP";
+		int serverPort = 1234;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables
 		 */
