@@ -12,10 +12,10 @@ public class Main {
 		/*
 		 * wichtige Parameter setzen
 		 */
-		String unserName = "BNJM";
+		String unserName = "mario.kayser@tu-dortmund.de";
 		int zeitProPeriode = 29;	// Zeit pro Periode in Sekunden
-		String serverName = "Serveradresse";
-		int serverPort = 1234;
+		String serverName = "129.217.165.242";
+		int serverPort = 22133;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables
 		 */
@@ -58,7 +58,22 @@ public class Main {
 		} catch (Exception e) {
 			System.out.println("Grunddaten konnten nicht abgefragt werden!");
 			e.printStackTrace();
+			try {
+				tcp.closeConnection();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				System.exit(2);
+			}
 			System.exit(2);
+		}
+
+		try {
+			tcp.closeConnection();
+			System.out.println("Trennen ohne Exception.");
+			System.exit(0);
+		} catch (Exception e) {
+			System.out.println("Beenden der Verbindung fehlgechlagen!");
+			System.exit(100);
 		}
 		
 		/*
@@ -66,7 +81,7 @@ public class Main {
 		 */
 		long periodenstart = System.nanoTime();
 		
-		// TODO
+		// TODO Szenarien generieren
 		// in Abhaengigkeit der Instanzgroesse eine (kleine) Menge an Szenarien generieren
 		int anzahlSzenarien = 10;
 		int[][] szenarien = LHS.normal_lhs(anzahlSzenarien, inst.erwartungswert, inst.varianz);
@@ -76,7 +91,7 @@ public class Main {
 		 * Produktionsentscheidung fuer erste Periode treffen
 		 */
 		int[] produktion = new int[inst.produkte];
-		// TODO
+		// TODO Produktionsentscheidung
 		
 		
 		
@@ -88,6 +103,12 @@ public class Main {
 		} catch (Exception e) {
 			System.out.println("Produktionsentscheidung der ersten Periode konnte nicht an Server übermittelt werden!");
 			e.printStackTrace();
+			try {
+				tcp.closeConnection();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				System.exit(3);
+			}
 			System.exit(3);
 		}
 		// der aktuelle Bestand in inst wurde aktualisiert
@@ -107,14 +128,14 @@ public class Main {
 			 */
 			int anzahlVerwendeterLager = 3;
 			lagerung = new int[anzahlVerwendeterLager][inst.produkte];
-			// TODO
+			// TODO Lagerentscheidung
 			
 
 			/*
 			 * Produktionsentscheidung fuer aktuelle Periode treffen
 			 */
 			produktion = new int[inst.produkte];
-			// TODO
+			// TODO Produktionsentscheidung
 			
 			
 			
@@ -127,6 +148,12 @@ public class Main {
 			} catch (Exception e) {
 				System.out.println("Produktionsentscheidung der ersten Periode konnte nicht an Server übermittelt werden!");
 				e.printStackTrace();
+				try {
+					tcp.closeConnection();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					System.exit(3);
+				}
 				System.exit(3);
 			}
 			// der aktuelle Bestand in inst wurde aktualisiert
