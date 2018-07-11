@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -23,6 +24,7 @@ public class TcpConnector{
 	private Socket socket;
 	private DataOutputStream output;
 	private DataInputStream input;
+	private ByteArrayOutputStream outputBuffer;
 	
 	public TcpConnector(String serverName, int port){
 		this.serverName = serverName;
@@ -44,8 +46,9 @@ public class TcpConnector{
 	
 	private void schreibeInteger(int zahl) throws Exception {
 		byte[] bytes = intToByteArray(zahl);
+		//output.write(bytes);
 		for (int i = 3; i >=0; i--) {
-			output.write(bytes[i]);
+			outputBuffer.write(bytes[i]);
 		}
 	}
 	
@@ -59,12 +62,17 @@ public class TcpConnector{
 	    Thread.sleep(10);
 	    this.output = new DataOutputStream(socket.getOutputStream());
 	    this.input = new DataInputStream(socket.getInputStream());
+	    this.outputBuffer = new ByteArrayOutputStream();
 	    
 	    // unseren Teamnamen an den Server senden
 	    byte[] bytes = unserName.getBytes();
 	    // TODO: eventuell muss das byte Array hier noch gespiegelt werden
-		output.write(bytes);
+		// output.write(bytes);
+	    for (int i = bytes.length - 1; i >= 0; i--) {
+	    	outputBuffer.write(bytes[i]);
+	    }
 	    //output.writeBytes(unserName);
+	    outputBuffer.writeTo(output);
 	    output.flush();
 	}
 	
@@ -79,12 +87,14 @@ public class TcpConnector{
 	 * Grunddaten des Problems abfragen und als Instanz-Objekt an Loeser weitergeben
 	 */
 	public Instanz frageGrunddatenAb() throws Exception{
+		System.out.println("Beginn von frageGrunddatenAb");
 		// warten bis Server Daten gesendet hat
 		int attempts = 0;
         while(input.available() == 0 && attempts < 3000)
         {
             attempts++;
             Thread.sleep(10); // 0.01 Sekunde
+            System.out.println("sleeping");
         }
         
         
@@ -99,6 +109,7 @@ public class TcpConnector{
 		for (int i = 0; i < produkte; i++) {
 			produktionsschranke[i] = leseInteger();
 		}
+		System.out.println("Produktionsschranken abgefragt");
 		int[] herstellkosten = new int[produkte];
 		for (int i = 0; i < produkte; i++) {
 			herstellkosten[i] =  leseInteger();
@@ -184,13 +195,17 @@ public class TcpConnector{
 	    for (int i = 0; i < produktion.length; i++) {
 	    	schreibeInteger(produktion[i]);
 	    }
+	    outputBuffer.writeTo(output);
 	    output.flush();
+	    
+	    System.out.println("Daten an Server gesendet!");
 	    
 	    // warten bis Server Daten gesendet hat
  		int attempts = 0;
         while(input.available() == 0 && attempts < 3000)
         {
             attempts++;
+        	System.out.println("sleeping... " + attempts);
             Thread.sleep(10); // 0.01 Sekunde
         }
          
@@ -200,6 +215,8 @@ public class TcpConnector{
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = leseInteger();
 	    }
+	    
+	    System.out.println("Daten vom Server erhalten.");
 	    
 	    inst.aktuellesKapital = kapital;
 	    inst.aktuellerBestand = ueberschuss.clone();
@@ -221,6 +238,7 @@ public class TcpConnector{
 	    for (int i = 0; i < produktion.length; i++) {
 	    	schreibeInteger(produktion[i]);
 	    }
+	    outputBuffer.writeTo(output);
 	    output.flush();
 	    
 	    // warten bis Server Daten gesendet hat
