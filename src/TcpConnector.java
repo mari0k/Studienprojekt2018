@@ -47,7 +47,7 @@ public class TcpConnector{
 	private void schreibeInteger(int zahl) throws Exception {
 		byte[] bytes = intToByteArray(zahl);
 		//output.write(bytes);
-		for (int i = 3; i >=0; i--) {
+		for (int i = 3; i >= 0; i--) {
 			outputBuffer.write(bytes[i]);
 		}
 	}
@@ -68,12 +68,14 @@ public class TcpConnector{
 	    byte[] bytes = unserName.getBytes();
 	    // TODO: eventuell muss das byte Array hier noch gespiegelt werden
 		// output.write(bytes);
-	    for (int i = bytes.length - 1; i >= 0; i--) {
+	    for (int i = 0; i < bytes.length; i++) {
 	    	outputBuffer.write(bytes[i]);
 	    }
+	    outputBuffer.write("\0".getBytes());
 	    //output.writeBytes(unserName);
 	    outputBuffer.writeTo(output);
 	    output.flush();
+	    outputBuffer.reset();
 	}
 	
 	/*
@@ -197,6 +199,7 @@ public class TcpConnector{
 	    }
 	    outputBuffer.writeTo(output);
 	    output.flush();
+	    outputBuffer.reset();
 	    
 	    System.out.println("Daten an Server gesendet!");
 	    
@@ -240,6 +243,7 @@ public class TcpConnector{
 	    }
 	    outputBuffer.writeTo(output);
 	    output.flush();
+	    outputBuffer.reset();
 	    
 	    // warten bis Server Daten gesendet hat
  		int attempts = 0;
