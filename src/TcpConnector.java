@@ -66,13 +66,10 @@ public class TcpConnector{
 	    
 	    // unseren Teamnamen an den Server senden
 	    byte[] bytes = unserName.getBytes();
-	    // TODO: eventuell muss das byte Array hier noch gespiegelt werden
-		// output.write(bytes);
 	    for (int i = 0; i < bytes.length; i++) {
 	    	outputBuffer.write(bytes[i]);
 	    }
 	    outputBuffer.write("\0".getBytes());
-	    //output.writeBytes(unserName);
 	    outputBuffer.writeTo(output);
 	    output.flush();
 	    outputBuffer.reset();
@@ -89,16 +86,13 @@ public class TcpConnector{
 	 * Grunddaten des Problems abfragen und als Instanz-Objekt an Loeser weitergeben
 	 */
 	public Instanz frageGrunddatenAb() throws Exception{
-		System.out.println("Beginn von frageGrunddatenAb");
 		// warten bis Server Daten gesendet hat
 		int attempts = 0;
         while(input.available() == 0 && attempts < 3000)
         {
             attempts++;
             Thread.sleep(10); // 0.01 Sekunde
-            System.out.println("sleeping");
         }
-        
         
         // vom Server gesendete Daten lesen
 		int startkapital = leseInteger();
@@ -111,7 +105,6 @@ public class TcpConnector{
 		for (int i = 0; i < produkte; i++) {
 			produktionsschranke[i] = leseInteger();
 		}
-		System.out.println("Produktionsschranken abgefragt");
 		int[] herstellkosten = new int[produkte];
 		for (int i = 0; i < produkte; i++) {
 			herstellkosten[i] =  leseInteger();
@@ -201,14 +194,11 @@ public class TcpConnector{
 	    output.flush();
 	    outputBuffer.reset();
 	    
-	    System.out.println("Daten an Server gesendet!");
-	    
 	    // warten bis Server Daten gesendet hat
  		int attempts = 0;
         while(input.available() == 0 && attempts < 3000)
         {
             attempts++;
-        	System.out.println("sleeping... " + attempts);
             Thread.sleep(10); // 0.01 Sekunde
         }
          
@@ -218,8 +208,6 @@ public class TcpConnector{
 	    for (int i = 0; i < inst.produkte; i++) {
 	    	ueberschuss[i] = leseInteger();
 	    }
-	    
-	    System.out.println("Daten vom Server erhalten.");
 	    
 	    inst.aktuellesKapital = kapital;
 	    inst.aktuellerBestand = ueberschuss.clone();

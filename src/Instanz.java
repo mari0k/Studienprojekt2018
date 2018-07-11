@@ -19,6 +19,7 @@ public class Instanz {
 	
 	public int aktuellesKapital;
 	public int[] aktuellerBestand;
+	public int[] delta;
 	
 	public Instanz(int S, int m, int n, int V, int C, int F, int[] b, int[] c, int[] p, int[] w, int[] v, int[] mean, int[] var) {
 		startkapital = S;
@@ -43,6 +44,7 @@ public class Instanz {
 		for (int i = 0; i < produkte; i++) {
 			aktuellerBestand[i] = 0;
 		}
+		delta = c.clone();
 	}
 	
 	public Instanz() {
