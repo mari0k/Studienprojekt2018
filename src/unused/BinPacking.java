@@ -1,3 +1,4 @@
+package unused;
 /*
  * ACHTUNG: diese Klasse, sowie die Klassen
  * "Bin" und "Element" muessen dringend bearbeitet

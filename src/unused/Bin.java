@@ -1,3 +1,4 @@
+package unused;
 import java.util.LinkedList;
 
 public class Bin {

@@ -1,5 +1,8 @@
+package unused;
 
 import java.util.*;
+
+import Instanz;
 
 public class Produkt {
 

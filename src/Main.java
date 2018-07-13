@@ -11,9 +11,9 @@ public class Main {
 		/*
 		 * wichtige Parameter setzen
 		 */
-		String unserName = "NBJM";
+		String unserName = "nbjm";
 		int zeitProPeriode = 28;	// Zeit pro Periode in Sekunden
-		String serverName = "localhost";
+		String serverName = "localhost"; 
 		int serverPort = 22133;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables
@@ -76,7 +76,7 @@ public class Main {
 		// TODO Szenarien generieren
 		// in Abhaengigkeit der Instanzgroesse eine (kleine) Menge an Szenarien generieren
 		int anzahlSzenarien = 101;
-		int[][] szenarien = LHS.normal_lhs(anzahlSzenarien, inst.erwartungswert, inst.varianz);
+		int[][] szenarien = ImprovedLHS.normal_lhs(anzahlSzenarien, inst.erwartungswert, inst.varianz);
 		
 		
 		/*
