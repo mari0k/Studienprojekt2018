@@ -13,7 +13,7 @@ public class Main {
 		 */
 		String unserName = "nbjm";
 		int zeitProPeriode = 28;	// Zeit pro Periode in Sekunden
-		String serverName = "localhost"; 
+		String serverName = "localhost";
 		int serverPort = 22133;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables

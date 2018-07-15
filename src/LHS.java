@@ -3,6 +3,8 @@ import java.util.Random;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class LHS {
+	
+	public static Random rand = new Random();
 
 	public static double[] lhs(int n) {
 		return lhs(n, 1)[0];
@@ -12,7 +14,7 @@ public class LHS {
 	 * statische Funktion zur Erzeugung eines Latin Hypercube Samplings auf dem Intervall (0, 1)
 	 */
 	public static double[][] lhs(int n, int d) {
-		Random rand = new Random();
+		
 		double[][] array = new double[d][n];
 		
 		// array initialisieren
