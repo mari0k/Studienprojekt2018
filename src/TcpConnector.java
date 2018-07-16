@@ -204,13 +204,13 @@ public class TcpConnector{
          
         // vom Server gesendete Daten lesen
 	    int kapital = leseInteger();
-	    int[] ueberschuss = new int[inst.produkte];
-	    for (int i = 0; i < inst.produkte; i++) {
+	    int[] ueberschuss = new int[inst.getAnzahlProdukte()];
+	    for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
 	    	ueberschuss[i] = leseInteger();
 	    }
 	    
-	    inst.aktuellesKapital = kapital;
-	    inst.aktuellerBestand = ueberschuss.clone();
+	    inst.setAktuellesKapital(kapital);
+	    inst.aktualisiereBestand(ueberschuss);
 	}
 	
 	/*
@@ -243,12 +243,12 @@ public class TcpConnector{
         
         // vom Server gesendete Daten lesen
 	    int kapital = leseInteger();
-	    int[] ueberschuss = new int[inst.produkte];
-	    for (int i = 0; i < inst.produkte; i++) {
+	    int[] ueberschuss = new int[inst.getAnzahlProdukte()];
+	    for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
 	    	ueberschuss[i] = leseInteger();
 	    }
-	    
-	    inst.aktuellesKapital = kapital;
-	    inst.aktuellerBestand = ueberschuss.clone();
+
+	    inst.setAktuellesKapital(kapital);
+	    inst.aktualisiereBestand(ueberschuss);
 	}
 }

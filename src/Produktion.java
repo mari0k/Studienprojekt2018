@@ -6,7 +6,6 @@ import gurobi.GRBModel;
 import gurobi.GRBVar;
 
 public class Produktion {
-
 	
 	public static int[] produziere(Instanz inst, int[][] szenarien, int maxLaufzeit) {
 		
@@ -14,8 +13,9 @@ public class Produktion {
 		double gamma = 1.0;
 		double kappa = 0.0;
 		
-		int[] produktion = new int[inst.produkte];
-		for (int i = 0; i < inst.produkte; i++) produktion[i] = 0;
+		int[] produktion = new int[inst.getAnzahlProdukte()];
+		
+		for (int i = 0; i < produktion.length; i++) produktion[i] = 0;
 		
 		try {
 			GRBEnv env = new GRBEnv();
@@ -26,9 +26,9 @@ public class Produktion {
 			 * Lager - Verkaufsmenge - Wegwerfmenge - Lagermenge - Ertrag
 			 */
 
-			GRBVar[] produktionsmenge = new GRBVar[inst.produkte];
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				produktionsmenge[produkt] = model.addVar(0, inst.produktionsschranke[produkt], 0, GRB.INTEGER,
+			GRBVar[] produktionsmenge = new GRBVar[inst.getAnzahlProdukte()];
+			for (Produkt produkt : inst.getProdukte()) {
+				produktionsmenge[produkt.getId()] = model.addVar(0, produkt.getProduktionsschranke(), 0, GRB.INTEGER,
 						"x_" + String.valueOf(produkt));
 			}
 			GRBVar[] anzahlBenoetigterLager = new GRBVar[anzahlSzenarien];
@@ -36,23 +36,23 @@ public class Produktion {
 				anzahlBenoetigterLager[szenario] = model.addVar(0, GRB.INFINITY, 0, GRB.INTEGER,
 						"z_" + String.valueOf(szenario));
 			}
-			GRBVar[][] verkaufsmenge = new GRBVar[anzahlSzenarien][inst.produkte];
+			GRBVar[][] verkaufsmenge = new GRBVar[anzahlSzenarien][inst.getProdukte().length];
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 					verkaufsmenge[szenario][produkt] = model.addVar(0, szenarien[szenario][produkt], 0,
 							GRB.INTEGER, "s_" + String.valueOf(szenario) + "_" + String.valueOf(produkt));
 				}
 			}
-			GRBVar[][] wegwerfmenge = new GRBVar[anzahlSzenarien][inst.produkte];
+			GRBVar[][] wegwerfmenge = new GRBVar[anzahlSzenarien][inst.getAnzahlProdukte()];
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 					wegwerfmenge[szenario][produkt] = model.addVar(0, GRB.INFINITY, 0, GRB.INTEGER,
 							"t_" + String.valueOf(szenario) + "_" + String.valueOf(produkt));
 				}
 			}
-			GRBVar[][] lagermenge = new GRBVar[anzahlSzenarien][inst.produkte];
+			GRBVar[][] lagermenge = new GRBVar[anzahlSzenarien][inst.getAnzahlProdukte()];
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 					lagermenge[szenario][produkt] = model.addVar(0, GRB.INFINITY, 0, GRB.INTEGER,
 							"y_" + String.valueOf(szenario) + "_" + String.valueOf(produkt));
 				}
@@ -71,22 +71,22 @@ public class Produktion {
 			 */
 
 			GRBLinExpr expr = new GRBLinExpr();
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				expr.addTerm(inst.herstellkosten[produkt], produktionsmenge[produkt]);
+			for (Produkt produkt : inst.getProdukte()) {
+				expr.addTerm(produkt.getHerstellungskosten(), produktionsmenge[produkt.getId()]);
 			}
-			model.addConstr(expr, GRB.LESS_EQUAL, inst.aktuellesKapital, "Kapitalbeschraenkung");
+			model.addConstr(expr, GRB.LESS_EQUAL, inst.getAktuellesKapital(), "Kapitalbeschraenkung");
 
 			/*
 			 * Nebenbedingungen an die Verkaufsmenge
 			 */
 
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (Produkt produkt : inst.getProdukte()) {
 					GRBLinExpr exprLinks = new GRBLinExpr();
-					exprLinks.addTerm(1, verkaufsmenge[szenario][produkt]);
+					exprLinks.addTerm(1, verkaufsmenge[szenario][produkt.getId()]);
 					GRBLinExpr exprRechts = new GRBLinExpr();
-					exprRechts.addTerm(1, produktionsmenge[produkt]);
-					exprRechts.addConstant(inst.aktuellerBestand[produkt]);
+					exprRechts.addTerm(1, produktionsmenge[produkt.getId()]);
+					exprRechts.addConstant(produkt.getAktuellerBestand());
 					model.addConstr(exprLinks, GRB.LESS_EQUAL, exprRechts,
 							"Beschraenkung der Verkaufsmenge von Produkt " + String.valueOf(produkt)
 									+ " in Szenario " + String.valueOf(szenario));
@@ -99,14 +99,14 @@ public class Produktion {
 			 */
 
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (Produkt produkt : inst.getProdukte()) {
 					GRBLinExpr exprLinks = new GRBLinExpr();
-					exprLinks.addTerm(1, lagermenge[szenario][produkt]);
+					exprLinks.addTerm(1, lagermenge[szenario][produkt.getId()]);
 					GRBLinExpr exprRechts = new GRBLinExpr();
-					exprRechts.addTerm(1, produktionsmenge[produkt]);
-					exprRechts.addConstant(inst.aktuellerBestand[produkt]);
-					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt]);
-					exprRechts.addTerm(-1, wegwerfmenge[szenario][produkt]);
+					exprRechts.addTerm(1, produktionsmenge[produkt.getId()]);
+					exprRechts.addConstant(produkt.getAktuellerBestand());
+					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt.getId()]);
+					exprRechts.addTerm(-1, wegwerfmenge[szenario][produkt.getId()]);
 					model.addConstr(exprLinks, GRB.EQUAL, exprRechts, "Lagermenge von Produkt "
 							+ String.valueOf(produkt) + " in Szenario " + String.valueOf(szenario));
 				}
@@ -116,13 +116,13 @@ public class Produktion {
 			 * Die Lagermenge ist hoechstens so hoch wie : Bestand + Produktion - Verkauf
 			 */
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (Produkt produkt : inst.getProdukte()) {
 					GRBLinExpr exprLinks = new GRBLinExpr();
-					exprLinks.addTerm(1, lagermenge[szenario][produkt]);
+					exprLinks.addTerm(1, lagermenge[szenario][produkt.getId()]);
 					GRBLinExpr exprRechts = new GRBLinExpr();
-					exprRechts.addTerm(1, produktionsmenge[produkt]);
-					exprRechts.addConstant(inst.aktuellerBestand[produkt]);
-					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt]);
+					exprRechts.addTerm(1, produktionsmenge[produkt.getId()]);
+					exprRechts.addConstant(produkt.getAktuellerBestand());
+					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt.getId()]);
 					model.addConstr(exprLinks, GRB.LESS_EQUAL, exprRechts,
 							"Beschraenkung der Lagermenge von Produkt " + String.valueOf(produkt) + " in Szenario "
 									+ String.valueOf(szenario));
@@ -133,13 +133,13 @@ public class Produktion {
 			 * Die Wegwerfmenge ist hoechstens so hoch wie : Bestand + Produktion - Verkauf
 			 */
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (Produkt produkt : inst.getProdukte()) {
 					GRBLinExpr exprLinks = new GRBLinExpr();
-					exprLinks.addTerm(1, wegwerfmenge[szenario][produkt]);
+					exprLinks.addTerm(1, wegwerfmenge[szenario][produkt.getId()]);
 					GRBLinExpr exprRechts = new GRBLinExpr();
-					exprRechts.addTerm(1, produktionsmenge[produkt]);
-					exprRechts.addConstant(inst.aktuellerBestand[produkt]);
-					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt]);
+					exprRechts.addTerm(1, produktionsmenge[produkt.getId()]);
+					exprRechts.addConstant(produkt.getAktuellerBestand());
+					exprRechts.addTerm(-1, verkaufsmenge[szenario][produkt.getId()]);
 					model.addConstr(exprLinks, GRB.LESS_EQUAL, exprRechts,
 							"Beschraenkung der Wegwerfmenge von Produkt " + String.valueOf(produkt)
 									+ " in Szenario " + String.valueOf(szenario));
@@ -154,12 +154,12 @@ public class Produktion {
 
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
 				GRBLinExpr exprLinks = new GRBLinExpr();
-				exprLinks.addTerm(gamma * inst.lagervolumen, anzahlBenoetigterLager[szenario]);
+				exprLinks.addTerm(gamma * inst.getLagervolumen(), anzahlBenoetigterLager[szenario]);
 				GRBLinExpr exprRechts = new GRBLinExpr();
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
-					exprRechts.addTerm(inst.volumen[produkt], lagermenge[szenario][produkt]);
+				for (Produkt produkt : inst.getProdukte()) {
+					exprRechts.addTerm(produkt.getVolumen(), lagermenge[szenario][produkt.getId()]);
 				}
-				exprRechts.addConstant(kappa * inst.lagervolumen);
+				exprRechts.addConstant(kappa * inst.getLagervolumen());
 				model.addConstr(exprLinks, GRB.GREATER_EQUAL, exprRechts,
 						"Anzahl der benoetigten Lager in Szenario " + String.valueOf(szenario));
 			}
@@ -174,11 +174,11 @@ public class Produktion {
 				GRBLinExpr exprLinks = new GRBLinExpr();
 				exprLinks.addTerm(1, ertrag[szenario]);
 				GRBLinExpr exprRechts = new GRBLinExpr();
-				exprRechts.addTerm(-inst.lagerkosten, anzahlBenoetigterLager[szenario]);
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
-					exprRechts.addTerm(inst.verkaufserloes[produkt], verkaufsmenge[szenario][produkt]);
-					exprRechts.addTerm(inst.delta[produkt], lagermenge[szenario][produkt]);
-					exprRechts.addTerm(-inst.wegwerfkosten[produkt], wegwerfmenge[szenario][produkt]);
+				exprRechts.addTerm(-inst.getLagerkosten(), anzahlBenoetigterLager[szenario]);
+				for (Produkt produkt : inst.getProdukte()) {
+					exprRechts.addTerm(produkt.getVerkaufserloes(), verkaufsmenge[szenario][produkt.getId()]);
+					exprRechts.addTerm(produkt.getTempBewertung(), lagermenge[szenario][produkt.getId()]);
+					exprRechts.addTerm(-produkt.getWegwerfkosten(), wegwerfmenge[szenario][produkt.getId()]);
 				}
 				model.addConstr(exprLinks, GRB.EQUAL, exprRechts, "Ertrag im Szenario " + String.valueOf(szenario));
 			}
@@ -192,8 +192,8 @@ public class Produktion {
 			 */
 
 			expr = new GRBLinExpr();
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				expr.addTerm(-inst.herstellkosten[produkt], produktionsmenge[produkt]);
+			for (Produkt produkt : inst.getProdukte()) {
+				expr.addTerm(-produkt.getHerstellungskosten(), produktionsmenge[produkt.getId()]);
 			}
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
 				expr.addTerm(1.0 / anzahlSzenarien, ertrag[szenario]);
@@ -211,13 +211,14 @@ public class Produktion {
 			 * Entsprechend der Loesung des Modells werden die Produktionsmengen festgelegt.
 			 */
 
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
+			for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 				produktion[produkt] = (int) Math.round(produktionsmenge[produkt].get(GRB.DoubleAttr.X));
 			}
 
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				inst.aktuellesKapital -= inst.herstellkosten[produkt] * produktion[produkt];
-				inst.aktuellerBestand[produkt] += produktion[produkt];
+			inst.zahleProduktionskosten(produktion);
+			
+			for (Produkt produkt : inst.getProdukte()) {
+				produkt.setAktuellerBestand(produkt.getAktuellerBestand() + produktion[produkt.getId()]);
 			}
 
 			model.dispose();

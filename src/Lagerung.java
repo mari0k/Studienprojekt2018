@@ -20,14 +20,23 @@ public class Lagerung {
 		 * wird, sondern nur der "Zielfunktionswert"
 		 */
 
-		int[][] temp = FirstFitDecreasing.pack(inst.lagervolumen, inst.aktuellerBestand, inst.volumen);
-		int[][] lagerung = new int[temp[0].length][inst.produkte];
-		for (int i = 0; i < inst.produkte; i++) {
+		int[] aktuellerBestand = new int[inst.getAnzahlProdukte()];
+		int[] volumen = new int[inst.getAnzahlProdukte()];
+		for (Produkt produkt : inst.getProdukte()) {
+			aktuellerBestand[produkt.getId()] = produkt.getAktuellerBestand();
+			volumen[produkt.getId()] = produkt.getVolumen();
+		}
+
+		int[][] temp = FirstFitDecreasing.pack(inst.getLagervolumen(), aktuellerBestand, volumen);
+		int[][] lagerung = new int[temp[0].length][inst.getAnzahlProdukte()];
+		for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
 			for (int j = 0; j < temp[0].length; j++) {
 				lagerung[j][i] = temp[i][j];
 			}
 		}
 		temp = null;
+		aktuellerBestand = null;
+		volumen = null;
 
 		int maxLager = lagerung.length;
 
@@ -35,33 +44,33 @@ public class Lagerung {
 			GRBEnv env = new GRBEnv();
 			GRBModel model = new GRBModel(env);
 
-			GRBVar[] behalten = new GRBVar[inst.produkte];
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				behalten[produkt] = model.addVar(0, inst.aktuellerBestand[produkt], 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die gelagert wird");
+			GRBVar[] behalten = new GRBVar[inst.getAnzahlProdukte()];
+			for (Produkt produkt : inst.getProdukte()) {
+				behalten[produkt.getId()] = model.addVar(0, produkt.getAktuellerBestand(), 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die gelagert wird");
 			}
-			GRBVar[] wegwerfen = new GRBVar[inst.produkte];
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
-				wegwerfen[produkt] = model.addVar(0, inst.aktuellerBestand[produkt], 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die weggeworfen wird");
+			GRBVar[] wegwerfen = new GRBVar[inst.getAnzahlProdukte()];
+			for (Produkt produkt : inst.getProdukte()) {
+				wegwerfen[produkt.getId()] = model.addVar(0, produkt.getAktuellerBestand(), 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die weggeworfen wird");
 			}
 			GRBVar[] lagerVerwenden = new GRBVar[maxLager];
 			for (int lager = 0; lager < maxLager; lager++) {
 				lagerVerwenden[lager] = model.addVar(0, 1, 0, GRB.BINARY, "Entscheidung, ob Lager " + String.valueOf(lager) + " verwendet werden soll");
 			}
-			GRBVar[][] lagermenge = new GRBVar[inst.produkte][maxLager];
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
+			GRBVar[][] lagermenge = new GRBVar[inst.getAnzahlProdukte()][maxLager];
+			for (Produkt produkt : inst.getProdukte()) {
 				for (int lager = 0; lager < maxLager; lager++) {
-					lagermenge[produkt][lager] = model.addVar(0, inst.aktuellerBestand[produkt], 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die in Lager " + String.valueOf(lager) + " gelagert wird");
+					lagermenge[produkt.getId()][lager] = model.addVar(0, produkt.getAktuellerBestand(), 0, GRB.INTEGER, "Menge von Produkt " + String.valueOf(produkt) + ", die in Lager " + String.valueOf(lager) + " gelagert wird");
 				}
 			}
 
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
+			for (Produkt produkt : inst.getProdukte()) {
 				GRBLinExpr expr = new GRBLinExpr();
-				expr.addTerm(1, behalten[produkt]);
-				expr.addTerm(1, wegwerfen[produkt]);
-				model.addConstr(expr, GRB.EQUAL, inst.aktuellerBestand[produkt], "das, was von Produkt " + String.valueOf(produkt) + " in Summe gelagert und weggeworfen wird, muss dem Bestand entsprechen");
+				expr.addTerm(1, behalten[produkt.getId()]);
+				expr.addTerm(1, wegwerfen[produkt.getId()]);
+				model.addConstr(expr, GRB.EQUAL, produkt.getAktuellerBestand(), "das, was von Produkt " + String.valueOf(produkt) + " in Summe gelagert und weggeworfen wird, muss dem Bestand entsprechen");
 			}
 
-			for (int produkt = 0; produkt < inst.produkte; produkt++) {
+			for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 				GRBLinExpr exprLinks = new GRBLinExpr();
 				GRBLinExpr exprRechts = new GRBLinExpr();
 				exprRechts.addTerm(1, behalten[produkt]);
@@ -74,9 +83,9 @@ public class Lagerung {
 			for (int lager = 0; lager < maxLager; lager++) {
 				GRBLinExpr exprLinks = new GRBLinExpr();
 				GRBLinExpr exprRechts = new GRBLinExpr();
-				exprRechts.addTerm(inst.lagervolumen, lagerVerwenden[lager]);
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
-					exprLinks.addTerm(inst.volumen[produkt], lagermenge[produkt][lager]);
+				exprRechts.addTerm(inst.getLagervolumen(), lagerVerwenden[lager]);
+				for (Produkt produkt : inst.getProdukte()) {
+					exprLinks.addTerm(produkt.getVolumen(), lagermenge[produkt.getId()][lager]);
 				}
 				model.addConstr(exprLinks, GRB.LESS_EQUAL, exprRechts, "Volumen von Lager " + String.valueOf(lager) + " muss eingehalten werden");
 			}
@@ -104,16 +113,16 @@ public class Lagerung {
 
 			GRBLinExpr expr = new GRBLinExpr();
 
-			for (int i = 0; i < inst.produkte; i++) {
-				expr.addTerm(inst.delta[i], behalten[i]);
+			for (Produkt produkt : inst.getProdukte()) {
+				expr.addTerm(produkt.getTempBewertung(), behalten[produkt.getId()]);
 			}
 
-			for (int i = 0; i < inst.produkte; i++) {
-				expr.addTerm(-inst.wegwerfkosten[i], wegwerfen[i]);
+			for (Produkt produkt : inst.getProdukte()) {
+				expr.addTerm(-produkt.getWegwerfkosten(), wegwerfen[produkt.getId()]);
 			}
 
 			for (int k = 0; k < maxLager; k++) {
-				expr.addTerm(-inst.lagerkosten, lagerVerwenden[k]);
+				expr.addTerm(-inst.getLagerkosten(), lagerVerwenden[k]);
 			}
 
 			model.setObjective(expr, GRB.MAXIMIZE);
@@ -137,28 +146,29 @@ public class Lagerung {
 			 * werden gespeichert
 			 */
 			
-			lagerung = new int[anzahlLager][inst.produkte];
+			lagerung = new int[anzahlLager][inst.getAnzahlProdukte()];
 
 			for (int lager = 0; lager < anzahlLager; lager++) {
-				for (int produkt = 0; produkt < inst.produkte; produkt++) {
+				for (int produkt = 0; produkt < inst.getAnzahlProdukte(); produkt++) {
 					lagerung[lager][produkt] = (int) Math.round(lagermenge[produkt][lager].get(GRB.DoubleAttr.X));
 				}
 
 			}
 
 
-			// Lagerkosten zahlen:
-			inst.aktuellesKapital -= inst.lagerkosten * anzahlLager;
+			// Lagerkosten zahlen
+			inst.zahleLagerkosten(anzahlLager);
 
 			// Kosten fuers Wegwerfen zahlen
-			for (int i = 0; i < inst.produkte; i++) {
-				inst.aktuellesKapital -= inst.wegwerfkosten[i] * Math.round(wegwerfen[i].get(GRB.DoubleAttr.X));
+			int[] wegwerfmenge = new int[inst.getAnzahlProdukte()];
+			for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
+				wegwerfmenge[i] = (int) Math.round(wegwerfen[i].get(GRB.DoubleAttr.X));
 			}
+			inst.zahleWegwerfkosten(wegwerfmenge);
 
 			// aktuellen Bestand anpassen
-
-			for (int i = 0; i < inst.produkte; i++) {
-				inst.aktuellerBestand[i] = (int) Math.round(behalten[i].get(GRB.DoubleAttr.X));
+			for (Produkt produkt : inst.getProdukte()) {
+				produkt.setAktuellerBestand((int) Math.round(behalten[produkt.getId()].get(GRB.DoubleAttr.X)));
 			}
 
 			model.dispose();

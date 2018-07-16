@@ -1,159 +1,109 @@
 
 public class Instanz {
 
-	public int startkapital;
-	public int perioden;
-	public int produkte;
-	public int lagervolumen;
-	public int lagerkosten;
-	public int fixkosten;
+	private final int startkapital;
+	private final int anzahlPerioden;
+	private final int anzahlProdukte;
+	private final int lagervolumen;
+	private final int lagerkosten;
+	private final int fixkosten;
 	
-	public int[] produktionsschranke;
-	public int[] herstellkosten;
-	public int[] verkaufserloes;
-	public int[] wegwerfkosten;
-	public int[] volumen;
+	private Produkt[] produkte;
 	
-	public int[] erwartungswert;
-	public int[] varianz;
+	/*
+	private int[] produktionsschranke;
+	private int[] herstellkosten;
+	private int[] verkaufserloes;
+	private int[] wegwerfkosten;
+	private int[] volumen;
+	 */
 	
-	public int aktuellesKapital;
-	public int[] aktuellerBestand;
-	public int[] delta;
+	// erwartungswert und varianz werden zum Erstellen der Szenarien mit LHS benoetigt
+	private final int[] erwartungswert;
+	private final int[] varianz;
+	
+	
+	private int aktuellesKapital;
+	/*
+	private int[] aktuellerBestand;
+	private int[] delta;
+	 */
 	
 	public Instanz(int S, int m, int n, int V, int C, int F, int[] b, int[] c, int[] p, int[] w, int[] v, int[] mean, int[] var) {
 		startkapital = S;
-		perioden = m;
-		produkte = n;
+		anzahlPerioden = m;
+		anzahlProdukte = n;
 		lagervolumen = V;
 		lagerkosten = C;
 		fixkosten = F;
 		
+		produkte = new Produkt[n];
+		for (int i = 0; i < n; i++) {
+			produkte[i] = new Produkt(i, c[i], p[i], v[i], w[i], b[i], mean[i], var[i]);
+		}
+		
+		/*
 		produktionsschranke = b.clone();
 		herstellkosten = c.clone();
 		verkaufserloes = p.clone();
 		wegwerfkosten = w.clone();
 		volumen = v.clone();
+		 */
 		
 		erwartungswert = mean.clone();
 		varianz = var.clone();
 		
 		
 		aktuellesKapital = S;
-		aktuellerBestand = new int[produkte];
-		for (int i = 0; i < produkte; i++) {
+		
+		/*
+		aktuellerBestand = new int[anzahlProdukte];
+		for (int i = 0; i < anzahlProdukte; i++) {
 			aktuellerBestand[i] = 0;
 		}
 		delta = c.clone();
+		 */
 	}
 	
-	public Instanz() {
-		
+	
+	public void aktualisiereBestand(int[] bestand) {
+		for (int i = 0; i < anzahlProdukte; i++) {
+			produkte[i].setAktuellerBestand(bestand[i]);
+		}
 	}
-
-	public int getStartkapital() {
-		return startkapital;
+	
+	public void zahleFixkosten() {
+		aktuellesKapital -= fixkosten;
 	}
-
-	public void setStartkapital(int startkapital) {
-		this.startkapital = startkapital;
+	
+	public void zahleProduktionskosten(int[] produktion) {
+		for (int i = 0; i < anzahlProdukte; i++) {
+			aktuellesKapital -= produkte[i].getHerstellungskosten() * produktion[i];	
+		}
 	}
-
-	public int getPerioden() {
-		return perioden;
+	
+	public void zahleLagerkosten(int anzahl) {
+		aktuellesKapital -= anzahl * lagerkosten;
 	}
-
-	public void setPerioden(int perioden) {
-		this.perioden = perioden;
+	
+	public void zahleWegwerfkosten(int[] entsorgung) {
+		for (Produkt produkt : produkte) {
+			aktuellesKapital -= produkt.getWegwerfkosten() * entsorgung[produkt.getId()];
+		}
 	}
-
-	public int getProdukte() {
-		return produkte;
+	
+	public void entsorgeRestbestand() {
+		for (Produkt produkt : produkte) {
+			aktuellesKapital -= produkt.getAktuellerBestand() * produkt.getWegwerfkosten();
+			produkt.setAktuellerBestand(0);
+		}
 	}
-
-	public void setProdukte(int produkte) {
-		this.produkte = produkte;
-	}
-
-	public int getLagervolumen() {
-		return lagervolumen;
-	}
-
-	public void setLagervolumen(int lagervolumen) {
-		this.lagervolumen = lagervolumen;
-	}
-
-	public int getLagerkosten() {
-		return lagerkosten;
-	}
-
-	public void setLagerkosten(int lagerkosten) {
-		this.lagerkosten = lagerkosten;
-	}
-
-	public int getFixkosten() {
-		return fixkosten;
-	}
-
-	public void setFixkosten(int fixkosten) {
-		this.fixkosten = fixkosten;
-	}
-
-	public int[] getProduktionsschranke() {
-		return produktionsschranke;
-	}
-
-	public void setProduktionsschranke(int[] produktionsschranke) {
-		this.produktionsschranke = produktionsschranke;
-	}
-
-	public int[] getHerstellkosten() {
-		return herstellkosten;
-	}
-
-	public void setHerstellkosten(int[] herstellkosten) {
-		this.herstellkosten = herstellkosten;
-	}
-
-	public int[] getVerkaufserloes() {
-		return verkaufserloes;
-	}
-
-	public void setVerkaufserloes(int[] verkaufserloes) {
-		this.verkaufserloes = verkaufserloes;
-	}
-
-	public int[] getWegwerfkosten() {
-		return wegwerfkosten;
-	}
-
-	public void setWegwerfkosten(int[] wegwerfkosten) {
-		this.wegwerfkosten = wegwerfkosten;
-	}
-
-	public int[] getVolumen() {
-		return volumen;
-	}
-
-	public void setVolumen(int[] volumen) {
-		this.volumen = volumen;
-	}
-
-	public int[] getErwartungswert() {
-		return erwartungswert;
-	}
-
-	public void setErwartungswert(int[] erwartungswert) {
-		this.erwartungswert = erwartungswert;
-	}
-
-	public int[] getVarianz() {
-		return varianz;
-	}
-
-	public void setVarianz(int[] varianz) {
-		this.varianz = varianz;
-	}
+	
+	
+	
+	
+	
+	
 
 	public int getAktuellesKapital() {
 		return aktuellesKapital;
@@ -163,14 +113,40 @@ public class Instanz {
 		this.aktuellesKapital = aktuellesKapital;
 	}
 
-	public int[] getAktuellerBestand() {
-		return aktuellerBestand;
+	public int getStartkapital() {
+		return startkapital;
 	}
 
-	public void setAktuellerBestand(int[] aktuellerBestand) {
-		this.aktuellerBestand = aktuellerBestand;
+	public int getAnzahlPerioden() {
+		return anzahlPerioden;
 	}
-	
-	
+
+	public int getAnzahlProdukte() {
+		return anzahlProdukte;
+	}
+
+	public int getLagervolumen() {
+		return lagervolumen;
+	}
+
+	public int getLagerkosten() {
+		return lagerkosten;
+	}
+
+	public int getFixkosten() {
+		return fixkosten;
+	}
+
+	public Produkt[] getProdukte() {
+		return produkte;
+	}
+
+	public int[] getErwartungswert() {
+		return erwartungswert;
+	}
+
+	public int[] getVarianz() {
+		return varianz;
+	}
 	
 }
