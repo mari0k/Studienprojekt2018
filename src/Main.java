@@ -13,7 +13,7 @@ public class Main {
 		 */
 		String unserName = "nbjm";
 		int zeitProPeriode = 28;	// Zeit pro Periode in Sekunden
-		String serverName = "localhost";
+		String serverName = "localhost"; 
 		int serverPort = 22133;
 		/*
 		 * Check if Arguments are given and overwrite the corresponding variables
@@ -66,6 +66,11 @@ public class Main {
 			System.exit(2);
 		}
 
+		ProduktionsmengenBewertung.setProdukte(inst.getProdukte());
+		Produkt.erstelleProduktSortierungen(inst.getProdukte());
+		LagerWegwerfHeuristik.setProduktSortierungen(Produkt.getProduktSortierungen());
+		Lager.setKosten(inst.getLagerkosten());
+		Lager.setVolumen(inst.getLagervolumen());
 		
 		
 		/*
@@ -75,7 +80,7 @@ public class Main {
 		
 		// TODO Szenarien generieren
 		// in Abhaengigkeit der Instanzgroesse eine (kleine) Menge an Szenarien generieren
-		int anzahlSzenarien = 101;
+		int anzahlSzenarien = 301;
 		int[][] szenarien = ImprovedLHS.normal_lhs(anzahlSzenarien, inst.getErwartungswert(), inst.getVarianz());
 		
 		
@@ -91,6 +96,11 @@ public class Main {
 		}
 		// TODO Produktionsentscheidung
 		int[] produktion = Produktion.produziere(inst, szenarien, zeitProPeriode - 1);
+		// Produktionsniveau der Produkte aktualisieren
+		for (Produkt produkt : inst.getProdukte()) {
+			produkt.setProduktionsniveau(produkt.getAktuellerBestand());
+		}
+		// Ausgabe
 		System.out.println("Produktion in Periode 1 von " + inst.getAnzahlPerioden());
 		for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
 			System.out.print(" " + produktion[i]);
@@ -132,13 +142,7 @@ public class Main {
 			 * Zeit fuer die naechste Periode laeuft
 			 */
 			periodenstart = System.nanoTime();
-
-			/*
-			 * Delta anpassen
-			 */
-			// TODO delta anpassen
-			
-			
+						
 			
 			
 			if (inst.getAktuellesKapital() < 0) {
@@ -150,7 +154,7 @@ public class Main {
 			 * Lager- und Wegwerfentscheidung fuer Restbestand aus vorheriger Periode treffen
 			 */
 			// TODO Lagerentscheidung
-			lagerung = Lagerung.lagere(inst, zeitProPeriode / 2 - 1);
+			lagerung = Lagerung.lagere(inst, zeitProPeriode / 4 - 1);
 			/*
 			System.out.println("Restbestand nach erster Periode:");
 			for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
@@ -179,9 +183,14 @@ public class Main {
 			System.out.println("Kapital zu Beginn von Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden() + ": " + inst.getAktuellesKapital());
 			// Fixkosten bezahlen
 			inst.zahleFixkosten();
-			// produktion = new int[inst.produkte];
 			// TODO Produktionsentscheidung
-			produktion = Produktion.produziere(inst, szenarien, zeitProPeriode / 2 - 1);
+			if (aktuellePeriode < inst.getAnzahlPerioden()) {
+				produktion = Produktion.produziere(inst, szenarien, 3 * zeitProPeriode / 4 - 1);
+			}
+			else {
+				produktion = Produktion.produziereLetztePeriode(inst, szenarien, zeitProPeriode / 2 - 1);
+			}
+			//inst.setAktuellesKapital(ProduktionsmengenBewertung.verbessereProduktionsmengen(szenarien, produktion, inst.getAktuellesKapital()));
 			System.out.println("Produktion in Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden());
 			for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
 				System.out.print(" " + produktion[i]);

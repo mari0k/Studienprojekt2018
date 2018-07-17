@@ -1,3 +1,4 @@
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class Produkt {
 
@@ -17,17 +18,18 @@ public class Produkt {
 	
 	
 	private int aktuellerBestand;
-	private int produktionsmenge;
+	private int produktionsniveau;
 	
 	
-	private final int id;
-	private final int herstellungskosten;
-	private final int verkaufserloes;
-	private final int volumen;
-	private final int wegwerfkosten;
-	private final int produktionsschranke;
-	private final int erwartungswert;
-	private final int varianz;
+	private int id;
+	private int herstellungskosten;
+	private int verkaufserloes;
+	private int volumen;
+	private int wegwerfkosten;
+	private int produktionsschranke;
+	private int erwartungswert;
+	private int varianz;
+	private NormalDistribution distribution;
 	
 	
 	public Produkt(int id, int herstellungskosten, int verkaufserloes, int volumen, int wegwerfkosten, int produktionsschranke, int erwartungswert, int varianz) {
@@ -40,7 +42,10 @@ public class Produkt {
 		this.erwartungswert = erwartungswert;
 		this.varianz = varianz;
 		this.aktuellerBestand = 0;
-		this.produktionsmenge = -1;
+		this.produktionsniveau = 0;
+		this.tempAnzahl = -1;
+		this.tempBewertung = herstellungskosten;
+		distribution = new NormalDistribution(erwartungswert, Math.sqrt(varianz), 1e-14);
 		assert (eingabeGueltig());
 	}
 	
@@ -63,13 +68,34 @@ public class Produkt {
 	}
 	
 	
-	public double bewerte(int anzahl, int verbleibendePerioden, int lagervolumen, int lagerkosten) {
+	public void bewerte() {
+		assert (tempAnzahl >= 0);
+		if (tempAnzahl == 0) {
+			tempBewertung = herstellungskosten;
+			return;
+		}
+		/*
+		 * TODO bisher keine Eingabeparameter verwendet!!!
+		 */
 		/*
 		 * Idee: gegeben Anzahl, unterstelle, dass in nächster Produktionsphase das Maximum produziert wird.
 		 * Berechne für 1,...,Anzahl die Bewertung einzeln (z.B eine Wkeit, dass das Produkt wegkommt) und
 		 * nehme dann den Durchschnitt.
 		 */
-		return 0.0;
+		
+		
+		/*
+		 * Anzahl muss aus tempAnzaahl gelesen werden!!!
+		 */
+		
+		double summe = 0.0;
+		for (int i = 1; i <= tempAnzahl; i++) {
+			double p = distribution.cumulativeProbability(produktionsschranke + i - 0.5);
+			summe += herstellungskosten * (p) + verkaufserloes * (1 - p);
+		}
+		tempBewertung = summe / tempAnzahl;
+		
+		System.out.println(herstellungskosten + " " + tempBewertung + " " + verkaufserloes);
 	}
 	
 	
@@ -102,6 +128,7 @@ public class Produkt {
 		produktSortierungen[4] = gibPermutationDerProdukteZurueck(produkte, permutation);
 		assert (istNachVerkaufserloesProVolumenAbsteigendSortiert(produktSortierungen[4]));
 		assert (sindAlleProduktSortierungenRichtig());
+		LagerWegwerfHeuristik.setProduktSortierungen(produktSortierungen);
 	}
 	
 	
@@ -335,17 +362,15 @@ public class Produkt {
 
 
 
-	public int getProduktionsmenge() {
-		return produktionsmenge;
+	public int getProduktionsniveau() {
+		return produktionsniveau;
 	}
 
 
 
-	public void setProduktionsmenge(int produktionsmenge) {
-		this.produktionsmenge = produktionsmenge;
+	public void setProduktionsniveau(int produktionsniveau) {
+		this.produktionsniveau = produktionsniveau;
 	}
-	
 	
 	
 }
-

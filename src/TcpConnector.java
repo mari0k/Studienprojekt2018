@@ -209,6 +209,24 @@ public class TcpConnector{
 	    	ueberschuss[i] = leseInteger();
 	    }
 	    
+	    /*
+	     * 
+	     */
+	    int[] verkauft = new int[inst.getAnzahlProdukte()];
+	    for (Produkt produkt : inst.getProdukte()) {
+	    	verkauft[produkt.getId()] = produkt.getAktuellerBestand() - ueberschuss[produkt.getId()]; 
+	    }
+	    int verkaufserloes = 0;
+	    for (Produkt produkt : inst.getProdukte()) {
+	    	verkaufserloes += produkt.getVerkaufserloes() * verkauft[produkt.getId()];
+	    }
+	    System.out.println("Unser bestimmtes Kapital: " + (inst.getAktuellesKapital() + verkaufserloes));
+	    System.out.println("Kapital vom Server:       " + kapital);
+
+	    assert (inst.getAktuellesKapital() + verkaufserloes == kapital);
+	    /*
+	     * 
+	     */
 	    inst.setAktuellesKapital(kapital);
 	    inst.aktualisiereBestand(ueberschuss);
 	}
@@ -248,6 +266,25 @@ public class TcpConnector{
 	    	ueberschuss[i] = leseInteger();
 	    }
 
+	    /*
+	     * 
+	     */
+	    int[] verkauft = new int[inst.getAnzahlProdukte()];
+	    for (Produkt produkt : inst.getProdukte()) {
+	    	verkauft[produkt.getId()] = produkt.getAktuellerBestand() - ueberschuss[produkt.getId()]; 
+	    }
+	    int verkaufserloes = 0;
+	    for (Produkt produkt : inst.getProdukte()) {
+	    	verkaufserloes += produkt.getVerkaufserloes() * verkauft[produkt.getId()];
+	    }
+	    System.out.println("Unser bestimmtes Kapital: " + (inst.getAktuellesKapital() + verkaufserloes));
+	    System.out.println("Kapital vom Server:       " + kapital);
+	    
+	    assert (inst.getAktuellesKapital() + verkaufserloes == kapital);
+	    
+	    /*
+	     * 
+	     */
 	    inst.setAktuellesKapital(kapital);
 	    inst.aktualisiereBestand(ueberschuss);
 	}
