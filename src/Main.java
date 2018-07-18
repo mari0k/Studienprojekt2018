@@ -95,7 +95,8 @@ public class Main {
 			System.exit(0);
 		}
 		// TODO Produktionsentscheidung
-		int[] produktion = Produktion.produziere(inst, szenarien, zeitProPeriode - 1);
+		Produktion.setGamma(inst);
+		int[] produktion = Produktion.produziere(inst, szenarien, (int) Math.floor(zeitProPeriode - (System.nanoTime() - periodenstart) / 1000000000.0 - 1));
 		// Produktionsniveau der Produkte aktualisieren
 		for (Produkt produkt : inst.getProdukte()) {
 			produkt.setProduktionsniveau(produkt.getAktuellerBestand());
@@ -189,6 +190,10 @@ public class Main {
 			}
 			else {
 				produktion = Produktion.produziereLetztePeriode(inst, szenarien, zeitProPeriode / 2 - 1);
+			}
+			// Produktionsniveau der Produkte aktualisieren
+			for (Produkt produkt : inst.getProdukte()) {
+				produkt.setProduktionsniveau(Math.max(produkt.getProduktionsniveau(), produkt.getAktuellerBestand()));
 			}
 			//inst.setAktuellesKapital(ProduktionsmengenBewertung.verbessereProduktionsmengen(szenarien, produktion, inst.getAktuellesKapital()));
 			System.out.println("Produktion in Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden());

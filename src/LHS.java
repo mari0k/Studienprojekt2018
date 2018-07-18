@@ -78,7 +78,28 @@ public class LHS {
 	 * statische Funktion zur Erzeugung eines NORMALVERTEILTEN Latin Hypercube Samplings mit Quantilen aus dem Intervall (0, 1)
 	 */
 	public static int[][] normal_lhs(int d, int[] mean, int[] variance) {
-		return normal_lhs(d, mean, variance, 0, 1);
+		//return normal_lhs(d, mean, variance, 0, 1);
+		int[][] rueck = new int[d][mean.length];
+		for  (int j = 0; j < mean.length; j++) {
+			double faktor = 1.0 / (d + 1);
+			NormalDistribution distribution = new NormalDistribution(mean[j], Math.sqrt(variance[j]), 1e-15);
+			//NormalDistribution distribution = new NormalDistribution(erwartungswert, Math.sqrt(varianz), 1e-12);
+			for (int i = 0; i < rueck.length; i++) {
+				rueck[i][j] = Math.max(0, (int) Math.round(distribution.inverseCumulativeProbability(faktor * (i + 1))));
+			}
+		}
+		// array-Spalten permutieren
+		int helperIndex;
+		int helperValue;
+		for (int j = 0; j < mean.length; j++) {
+			for (int i = 0; i < d; i++) {
+				helperIndex = rand.nextInt(d);
+				helperValue = rueck[i][j];
+				rueck[i][j] = rueck[helperIndex][j];
+				rueck[helperIndex][j] = helperValue;
+			}
+		}
+		return rueck;
 	}
 	
 	/*

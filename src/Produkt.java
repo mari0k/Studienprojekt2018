@@ -14,7 +14,7 @@ public class Produkt {
 	
 	
 	private int tempAnzahl;
-	private double tempBewertung;
+	private int tempBewertung;
 	
 	
 	private int aktuellerBestand;
@@ -45,7 +45,7 @@ public class Produkt {
 		this.produktionsniveau = 0;
 		this.tempAnzahl = -1;
 		this.tempBewertung = herstellungskosten;
-		distribution = new NormalDistribution(erwartungswert, Math.sqrt(varianz), 1e-14);
+		distribution = new NormalDistribution(erwartungswert, Math.sqrt(varianz), 1e-15);
 		assert (eingabeGueltig());
 	}
 	
@@ -91,11 +91,12 @@ public class Produkt {
 		double summe = 0.0;
 		for (int i = 1; i <= tempAnzahl; i++) {
 			double p = distribution.cumulativeProbability(produktionsschranke + i - 0.5);
-			summe += herstellungskosten * (p) + verkaufserloes * (1 - p);
+			summe += herstellungskosten * (1 + p) + verkaufserloes * (1.0 - p);
 		}
-		tempBewertung = summe / tempAnzahl;
+		tempBewertung = (int) Math.round(summe / (2 * tempAnzahl));
 		
-		System.out.println(herstellungskosten + " " + tempBewertung + " " + verkaufserloes);
+		//System.out.println(herstellungskosten + " " + tempBewertung + " " + verkaufserloes);
+		//System.out.println(tempAnzahl);
 	}
 	
 	
@@ -331,7 +332,7 @@ public class Produkt {
 		return tempAnzahl;
 	}
 	
-	public double getTempBewertung() {
+	public int getTempBewertung() {
 		return tempBewertung;
 	}
 	

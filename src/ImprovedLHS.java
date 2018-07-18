@@ -225,7 +225,8 @@ public class ImprovedLHS {
 		for (int i = 0; i < d; i++) {
 			for (int j = 0; j < n; j++) {
 				do {
-					array[i][j] = ( lhs[j][i] - 1 + random.nextDouble() ) / d;
+					//array[i][j] = ( lhs[j][i] - 1 + random.nextDouble() ) / d;
+					array[i][j] = ( lhs[j][i] - 1 + 0.5 ) / d;
 				} while (array[i][j] == 0);
 			}
 		}
