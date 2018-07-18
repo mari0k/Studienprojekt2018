@@ -1,3 +1,4 @@
+package main;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -88,7 +89,7 @@ public class TcpConnector{
 	public Instanz frageGrunddatenAb() throws Exception{
 		// warten bis Server Daten gesendet hat
 		int attempts = 0;
-        while(input.available() == 0 && attempts < 3000)
+        while(input.available() == 0 && attempts < 30000)	// 3 Minuten
         {
             attempts++;
             Thread.sleep(10); // 0.01 Sekunde
@@ -196,7 +197,7 @@ public class TcpConnector{
 	    
 	    // warten bis Server Daten gesendet hat
  		int attempts = 0;
-        while(input.available() == 0 && attempts < 3000)
+        while(input.available() == 0 && attempts < 3000)	// 30 Sekunden
         {
             attempts++;
             Thread.sleep(10); // 0.01 Sekunde
@@ -210,8 +211,6 @@ public class TcpConnector{
 	    }
 	    
 	    /*
-	     * 
-	     */
 	    int[] verkauft = new int[inst.getAnzahlProdukte()];
 	    for (Produkt produkt : inst.getProdukte()) {
 	    	verkauft[produkt.getId()] = produkt.getAktuellerBestand() - ueberschuss[produkt.getId()]; 
@@ -224,9 +223,8 @@ public class TcpConnector{
 	    System.out.println("Kapital vom Server:       " + kapital);
 
 	    assert (inst.getAktuellesKapital() + verkaufserloes == kapital);
-	    /*
-	     * 
 	     */
+	     
 	    inst.setAktuellesKapital(kapital);
 	    inst.aktualisiereBestand(ueberschuss);
 	}
@@ -253,7 +251,7 @@ public class TcpConnector{
 	    
 	    // warten bis Server Daten gesendet hat
  		int attempts = 0;
-        while(input.available() == 0 && attempts < 3000)
+        while(input.available() == 0 && attempts < 3000)	// 30 Sekunden
         {             
         	attempts++;
             Thread.sleep(10); // 0.01 Sekunde
@@ -267,8 +265,6 @@ public class TcpConnector{
 	    }
 
 	    /*
-	     * 
-	     */
 	    int[] verkauft = new int[inst.getAnzahlProdukte()];
 	    for (Produkt produkt : inst.getProdukte()) {
 	    	verkauft[produkt.getId()] = produkt.getAktuellerBestand() - ueberschuss[produkt.getId()]; 
@@ -281,10 +277,8 @@ public class TcpConnector{
 	    System.out.println("Kapital vom Server:       " + kapital);
 	    
 	    assert (inst.getAktuellesKapital() + verkaufserloes == kapital);
-	    
-	    /*
-	     * 
 	     */
+	    
 	    inst.setAktuellesKapital(kapital);
 	    inst.aktualisiereBestand(ueberschuss);
 	}

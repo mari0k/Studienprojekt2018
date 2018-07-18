@@ -1,7 +1,6 @@
 package unused;
 
 import java.io.IOException;
-import java.util.*;
 import gurobi.*;
 
 public class binPackingGurobiSolver {

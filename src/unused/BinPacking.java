@@ -21,20 +21,20 @@ import gurobi.GRBVar;
 
 public class BinPacking {
 
-	private int maxSekunden; // maximale Laufzeit in Sekunden
+	//private int maxSekunden; // maximale Laufzeit in Sekunden
 	private int binKapazitaet; // die Kapazitaet EINES Bins
 	private int anzahlVerschiedeneGroessen; // Anzahl der verschiedenen Groessen / Gewichte / Elemente
-	private int[] groessen; // die verschiedenen Groessen / Gewichte / Elemente
-	private int[] anzahlen; // die Anzahlen, d.h. Multiplizitäten eines Typs von Gewicht
+	//private int[] groessen; // die verschiedenen Groessen / Gewichte / Elemente
+	//private int[] anzahlen; // die Anzahlen, d.h. Multiplizitäten eines Typs von Gewicht
 	private Element[] alleElemente;
 	private LinkedList<Bin> besteLoesung;
 	
 	
 	public BinPacking(int maxSekunden, int binKapazitaet, int[] groessen, int[] anzahlen) {
-		this.maxSekunden = maxSekunden;
+		//this.maxSekunden = maxSekunden;
 		this.binKapazitaet = binKapazitaet;
-		this.groessen = groessen;
-		this.anzahlen = anzahlen;
+		//this.groessen = groessen;
+		//this.anzahlen = anzahlen;
 		anzahlVerschiedeneGroessen = groessen.length;
 		int gesamtAnzahlElemente = 0;
 		for (int i = 0; i < anzahlVerschiedeneGroessen; i++) {

@@ -1,3 +1,4 @@
+package main;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -12,7 +13,6 @@ public class Produktion {
 	private static int[][] varZ = null;
 	private static int[] varY = null;
 	private static int[][] varT = null;
-	private static double[] varE = null;
 	
 
 	private static double gamma = 0.975;
@@ -146,9 +146,6 @@ public static int[] produziere(Instanz inst, int[][] szenarien, int maxLaufzeit)
 			GRBVar[] ertrag = new GRBVar[anzahlSzenarien];
 			for (int szenario = 0; szenario < anzahlSzenarien; szenario++) {
 				ertrag[szenario] = model.addVar(0, GRB.INFINITY, 0, GRB.CONTINUOUS, "E_" + String.valueOf(szenario));
-				//if (varE != null) {
-				//	ertrag[szenario].set(GRB.DoubleAttr.Start, varE[szenario]);
-				//}
 			}
 
 			/*
@@ -295,7 +292,7 @@ public static int[] produziere(Instanz inst, int[][] szenarien, int maxLaufzeit)
 			model.set("MIPGap", "0.0");
 			model.set("MIPGapAbs", "0.0");
 			model.set("TimeLimit", String.valueOf(maxLaufzeit));
-			//model.set("LogToConsole", "0"); //TODO
+			model.set("LogToConsole", "0"); //TODO
 			model.optimize();
 
 			/*
@@ -312,7 +309,13 @@ public static int[] produziere(Instanz inst, int[][] szenarien, int maxLaufzeit)
 				produkt.setAktuellerBestand(produkt.getAktuellerBestand() + produktion[produkt.getId()]);
 			}
 			
+			/*
+			 * Hier wird die Produktionsentscheidung der ersten Periode als Startlösung für die folgenden Perioden gesetzt.
+			 * - Führt eher zu Problemen als zu Verbesserungen
+			 * 
+			 */
 			
+			/*
 			if (varX == null) {
 				varX = new int[inst.getAnzahlProdukte()];
 				varS = new int[szenarien.length][inst.getAnzahlProdukte()];
@@ -334,7 +337,7 @@ public static int[] produziere(Instanz inst, int[][] szenarien, int maxLaufzeit)
 				}
 				
 			}
-			
+			*/
 
 			model.dispose();
 			env.dispose();

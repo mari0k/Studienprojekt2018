@@ -1,3 +1,5 @@
+package main;
+
 public class Main {
 	
 	/* ============================================================================
@@ -11,7 +13,7 @@ public class Main {
 		/*
 		 * wichtige Parameter setzen
 		 */
-		String unserName = "nbjm";
+		String unserName = "Infinity";
 		int zeitProPeriode = 28;	// Zeit pro Periode in Sekunden
 		String serverName = "localhost"; 
 		int serverPort = 22133;
@@ -66,11 +68,12 @@ public class Main {
 			System.exit(2);
 		}
 
-		ProduktionsmengenBewertung.setProdukte(inst.getProdukte());
-		Produkt.erstelleProduktSortierungen(inst.getProdukte());
-		LagerWegwerfHeuristik.setProduktSortierungen(Produkt.getProduktSortierungen());
-		Lager.setKosten(inst.getLagerkosten());
-		Lager.setVolumen(inst.getLagervolumen());
+		
+		//ProduktionsmengenBewertung.setProdukte(inst.getProdukte());
+		//Produkt.erstelleProduktSortierungen(inst.getProdukte());
+		//LagerWegwerfHeuristik.setProduktSortierungen(Produkt.getProduktSortierungen());
+		//Lager.setKosten(inst.getLagerkosten());
+		//Lager.setVolumen(inst.getLagervolumen());
 		
 		
 		/*
@@ -79,8 +82,36 @@ public class Main {
 		long periodenstart = System.nanoTime();
 		
 		// TODO Szenarien generieren
-		// in Abhaengigkeit der Instanzgroesse eine (kleine) Menge an Szenarien generieren
 		int anzahlSzenarien = 301;
+		
+		if (inst.getAnzahlProdukte() >= 0) {
+			anzahlSzenarien = 1501;
+		}
+		if (inst.getAnzahlProdukte() >= 7) {
+			anzahlSzenarien = 1101;
+		}
+		if (inst.getAnzahlProdukte() >= 14) {
+			anzahlSzenarien = 951;
+		}
+		if (inst.getAnzahlProdukte() >= 21) {
+			anzahlSzenarien = 801;
+		}
+		if (inst.getAnzahlProdukte() >= 28) {
+			anzahlSzenarien = 651;
+		}
+		if (inst.getAnzahlProdukte() >= 35) {
+			anzahlSzenarien = 501;
+		}
+		if (inst.getAnzahlProdukte() >= 42) {
+			anzahlSzenarien = 451;
+		}
+		if (inst.getAnzahlProdukte() >= 49) {
+			anzahlSzenarien = 351;
+		}
+		if (inst.getAnzahlProdukte() >= 75) {
+			anzahlSzenarien = 101;
+		}
+			
 		int[][] szenarien = ImprovedLHS.normal_lhs(anzahlSzenarien, inst.getErwartungswert(), inst.getVarianz());
 		
 		
@@ -92,10 +123,10 @@ public class Main {
 		inst.zahleFixkosten();
 		if (inst.getAktuellesKapital() < 0) {
 			System.out.println("Pleite! vor Produktion in Periode 1 von " + inst.getAnzahlPerioden());
-			System.exit(0);
+			//System.exit(0);
 		}
-		// TODO Produktionsentscheidung
 		Produktion.setGamma(inst);
+		// TODO Produktionsentscheidung
 		int[] produktion = Produktion.produziere(inst, szenarien, (int) Math.floor(zeitProPeriode - (System.nanoTime() - periodenstart) / 1000000000.0 - 1));
 		// Produktionsniveau der Produkte aktualisieren
 		for (Produkt produkt : inst.getProdukte()) {
@@ -112,7 +143,7 @@ public class Main {
 
 		if (inst.getAktuellesKapital() < 0) {
 			System.out.println("Pleite! nach Produktion in Periode 1 von " + inst.getAnzahlPerioden());
-			System.exit(0);
+			//System.exit(0);
 		}
 		
 		
@@ -128,9 +159,9 @@ public class Main {
 				tcp.closeConnection();
 			} catch (Exception e1) {
 				e1.printStackTrace();
-				System.exit(3);
+				//System.exit(3);
 			}
-			System.exit(3);
+			//System.exit(3);
 		}
 		// der aktuelle Bestand in inst wurde aktualisiert
 		
@@ -148,7 +179,7 @@ public class Main {
 			
 			if (inst.getAktuellesKapital() < 0) {
 				System.out.println("Pleite! vor Lagerung in Periode " + (aktuellePeriode - 1) + " von " + inst.getAnzahlPerioden());
-				System.exit(0);
+				//System.exit(0);
 			}
 			
 			/*
@@ -156,13 +187,12 @@ public class Main {
 			 */
 			// TODO Lagerentscheidung
 			lagerung = Lagerung.lagere(inst, zeitProPeriode / 4 - 1);
-			/*
-			System.out.println("Restbestand nach erster Periode:");
+
+			System.out.println("Restbestand nach Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden());
 			for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
-				System.out.print(" " + inst.aktuellerBestand[i]);
+				System.out.print(" " + inst.getProdukte()[i].getAktuellerBestand());
 			}
 			System.out.println("");
-			 */
 			System.out.println("Lagerung in Periode " + (aktuellePeriode - 1) + " von " + inst.getAnzahlPerioden());
 			for (int j = 0; j < lagerung.length; j++) {
 				System.out.println(j);
@@ -175,7 +205,7 @@ public class Main {
 
 			if (inst.getAktuellesKapital() < 0) {
 				System.out.println("Pleite! nach Lagerung in Periode " + (aktuellePeriode - 1) + " von " + inst.getAnzahlPerioden());
-				System.exit(0);
+				//System.exit(0);
 			}
 
 			/*
@@ -184,16 +214,21 @@ public class Main {
 			System.out.println("Kapital zu Beginn von Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden() + ": " + inst.getAktuellesKapital());
 			// Fixkosten bezahlen
 			inst.zahleFixkosten();
-			// TODO Produktionsentscheidung
-			if (aktuellePeriode < inst.getAnzahlPerioden()) {
-				produktion = Produktion.produziere(inst, szenarien, 3 * zeitProPeriode / 4 - 1);
+			if (inst.getAktuellesKapital() > 0) {
+				// TODO Produktionsentscheidung
+				if (aktuellePeriode < inst.getAnzahlPerioden()) {
+					produktion = Produktion.produziere(inst, szenarien, (int) Math.floor(zeitProPeriode - (System.nanoTime() - periodenstart) / 1000000000.0 - 1));
+				}
+				else {
+					produktion = Produktion.produziereLetztePeriode(inst, szenarien, (int) Math.floor(zeitProPeriode - (System.nanoTime() - periodenstart) / 1000000000.0 - 1));
+				}
+				// Produktionsniveau der Produkte aktualisieren
+				for (Produkt produkt : inst.getProdukte()) {
+					produkt.setProduktionsniveau(Math.max(produkt.getProduktionsniveau(), produkt.getAktuellerBestand()));
+				}
 			}
 			else {
-				produktion = Produktion.produziereLetztePeriode(inst, szenarien, zeitProPeriode / 2 - 1);
-			}
-			// Produktionsniveau der Produkte aktualisieren
-			for (Produkt produkt : inst.getProdukte()) {
-				produkt.setProduktionsniveau(Math.max(produkt.getProduktionsniveau(), produkt.getAktuellerBestand()));
+				produktion = new int[inst.getAnzahlProdukte()];
 			}
 			//inst.setAktuellesKapital(ProduktionsmengenBewertung.verbessereProduktionsmengen(szenarien, produktion, inst.getAktuellesKapital()));
 			System.out.println("Produktion in Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden());
@@ -206,7 +241,7 @@ public class Main {
 
 			if (inst.getAktuellesKapital() < 0) {
 				System.out.println("Pleite! nach Produktion in Periode " + aktuellePeriode + " von " + inst.getAnzahlPerioden());
-				System.exit(0);
+				//System.exit(0);
 			}
 			
 			
@@ -223,9 +258,9 @@ public class Main {
 					tcp.closeConnection();
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					System.exit(3);
+					//System.exit(3);
 				}
-				System.exit(3);
+				//System.exit(3);
 			}
 			// der aktuelle Bestand in inst wurde aktualisiert
 		}
@@ -236,7 +271,7 @@ public class Main {
 		inst.entsorgeRestbestand();
 		if (inst.getAktuellesKapital() < 0) {
 			System.out.println("Pleite! durch Entsorgung in letzter Periode");
-			System.exit(0);
+			//System.exit(0);
 		}
 		System.out.println("ENDE! Kapital nach Entsorgung: " + inst.getAktuellesKapital());
 		
@@ -248,7 +283,7 @@ public class Main {
 		} catch (Exception e) {
 			System.out.println("Verbindung zum Server konnte nicht beendet werden!");
 			e.printStackTrace();
-			System.exit(10);
+			//System.exit(10);
 		}
 	}
 }

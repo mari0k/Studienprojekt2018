@@ -1,3 +1,4 @@
+package unused;
 import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -22,7 +23,8 @@ public class LHS {
 			for (int j = 0; j < n; j++) {
 				// rationale Zufallszahl zwischen i/d und (i+1)/d erzeugen
 				do {
-					array[i][j] = (i * (1.0 / d)) + (rand.nextDouble() * (1.0 / d));
+					//array[i][j] = (i * (1.0 / d)) + (rand.nextDouble() * (1.0 / d));	// Zufälliger Punkt aus Teilintervall
+					array[i][j] = (i * (1.0 / d)) + (0.5 * (1.0 / d));	// Mittelpunkt des Teilintervalls
 				} while (array[i][j] == (i * (1.0 / d)));
 			}
 		}
@@ -78,28 +80,7 @@ public class LHS {
 	 * statische Funktion zur Erzeugung eines NORMALVERTEILTEN Latin Hypercube Samplings mit Quantilen aus dem Intervall (0, 1)
 	 */
 	public static int[][] normal_lhs(int d, int[] mean, int[] variance) {
-		//return normal_lhs(d, mean, variance, 0, 1);
-		int[][] rueck = new int[d][mean.length];
-		for  (int j = 0; j < mean.length; j++) {
-			double faktor = 1.0 / (d + 1);
-			NormalDistribution distribution = new NormalDistribution(mean[j], Math.sqrt(variance[j]), 1e-15);
-			//NormalDistribution distribution = new NormalDistribution(erwartungswert, Math.sqrt(varianz), 1e-12);
-			for (int i = 0; i < rueck.length; i++) {
-				rueck[i][j] = Math.max(0, (int) Math.round(distribution.inverseCumulativeProbability(faktor * (i + 1))));
-			}
-		}
-		// array-Spalten permutieren
-		int helperIndex;
-		int helperValue;
-		for (int j = 0; j < mean.length; j++) {
-			for (int i = 0; i < d; i++) {
-				helperIndex = rand.nextInt(d);
-				helperValue = rueck[i][j];
-				rueck[i][j] = rueck[helperIndex][j];
-				rueck[helperIndex][j] = helperValue;
-			}
-		}
-		return rueck;
+		return normal_lhs(d, mean, variance, 0, 1);
 	}
 	
 	/*

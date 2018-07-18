@@ -1,8 +1,10 @@
 package unused;
 
 import java.util.*;
+import main.Produkt;
+import main.Instanz;
 
-public class Greedy_Heuristik {
+public class GreedyProduktion {
 
 	static boolean[] produktBetrachtet;
 	static boolean alleProdukteBetrachtet;
@@ -44,10 +46,12 @@ public class Greedy_Heuristik {
 		}
 
 		alleProdukteBetrachtet = false;
-		Produkt prod = new Produkt();
-		LinkedList<Produkt> produkte = prod.erzeugeProdukte(inst);
+		LinkedList<Produkt> produkte = new LinkedList<>();
+		for (Produkt produkt: inst.getProdukte()) {
+			produkte.add(produkt);
+		}
 
-		Collections.sort(produkte, new Sortiere_Absteigend());
+		Collections.sort(produkte, new SortiereProdukteAbsteigend());
 		double startGewinn = berechneGewinnGlobal(inst, produktion, szenarien, wahrscheinlichkeiten, lagerBestand);
 
 		greedyHeuristik(inst, produktion, startGewinn, szenarien, lagerBestand, 0, wahrscheinlichkeiten,
@@ -64,9 +68,9 @@ public class Greedy_Heuristik {
 			int[] lagerBestand, int aktuellesProdukt, double[] wahrscheinlichkeiten, LinkedList<Produkt> produkte,
 			double verfuegbaresKapital) {
 
-		int produktIndex = produkte.get(aktuellesProdukt).getIndex();
-		int n = inst.produkte;
-		int[] ausgabe = new int[n];
+		int produktIndex = produkte.get(aktuellesProdukt).getId();
+		int n = inst.getAnzahlProdukte();
+		//int[] ausgabe = new int[n];
 		int[] naechsteProduktion = produktion.clone();
 		naechsteProduktion[produktIndex] += 1;
 
@@ -88,7 +92,7 @@ public class Greedy_Heuristik {
 				}
 			}
 			if (!alleProdukteBetrachtet) {
-				System.out.println(produkte.get(aktuellesProdukt + 1).getIndex());
+				System.out.println(produkte.get(aktuellesProdukt + 1).getId());
 				aktuellesProdukt++;
 				greedyHeuristik(inst, produktion, aktuellerGewinn, szenarien, lagerBestand, aktuellesProdukt,
 						wahrscheinlichkeiten, produkte, verfuegbaresKapital);
@@ -99,12 +103,12 @@ public class Greedy_Heuristik {
 	}
 
 	public static boolean produktionMoeglich(Instanz inst, int[] produktion, double verfuegbaresKapital) {
-		int n = inst.produkte;
+		int n = inst.getAnzahlProdukte();
 		double produktionsKosten = 0;
 
 		for (int i = 0; i < n; i++) {
-			produktionsKosten += produktion[i] * inst.getHerstellkosten()[i];
-			if (produktion[i] > inst.getProduktionsschranke()[i]) {
+			produktionsKosten += produktion[i] * inst.getProdukte()[i].getHerstellungskosten();
+			if (produktion[i] > inst.getProdukte()[i].getProduktionsschranke()) {
 				return false;
 			}
 		}
@@ -126,8 +130,8 @@ public class Greedy_Heuristik {
 
 		}
 
-		for (int i = 0; i < inst.produkte; i++) {
-			ausgabe -= produktion[i] * inst.herstellkosten[i];
+		for (int i = 0; i < inst.getAnzahlProdukte(); i++) {
+			ausgabe -= produktion[i] * inst.getProdukte()[i].getHerstellungskosten();
 		}
 		for (int i = 0; i < gewinn.length; i++) {
 
@@ -140,11 +144,16 @@ public class Greedy_Heuristik {
 	public static double berechneGewinnSzenario(Instanz inst, int[] produktion, int[] lagerBestand, int[] nachfrage) {
 
 		double gewinn = 0.0;
-		int n = inst.produkte;
+		int n = inst.getAnzahlProdukte();
 		int[] verkaufsMenge = new int[n];
-		int[] c = inst.getHerstellkosten();
-		int[] p = inst.getVerkaufserloes();
-		int[] w = inst.getWegwerfkosten();
+		int[] c = new int[inst.getAnzahlProdukte()];
+		int[] p = new int[inst.getAnzahlProdukte()];
+		int[] w = new int[inst.getAnzahlProdukte()];
+		for (Produkt produkt : inst.getProdukte()) {
+			c[produkt.getId()] = produkt.getHerstellungskosten();
+			p[produkt.getId()] = produkt.getVerkaufserloes();
+			w[produkt.getId()] = produkt.getWegwerfkosten();
+		}
 		int C = inst.getLagerkosten();
 
 		double anzahlLager = 0;

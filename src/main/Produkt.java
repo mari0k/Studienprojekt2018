@@ -1,15 +1,10 @@
+package main;
 import org.apache.commons.math3.distribution.NormalDistribution;
+
+import unused.LagerWegwerfHeuristik;
 
 public class Produkt {
 
-	
-	// man müsste jedem Produkt nach seine Anzahl mitgeben!!!
-	// also als Attribut, sonst könnte die LagerWegwerfHeuristik nicht wissen,
-	// wie viel von welchem Produkt da ist
-	// die Übergabe der Anzahl könnte auch das bewerten des Produkts vereinfachen
-	// Aber die Anzahl müsste jedes mal neu gesetzt werden?!
-	
-	
 	private static Produkt[][] produktSortierungen;	
 	
 	
@@ -75,17 +70,9 @@ public class Produkt {
 			return;
 		}
 		/*
-		 * TODO bisher keine Eingabeparameter verwendet!!!
-		 */
-		/*
 		 * Idee: gegeben Anzahl, unterstelle, dass in nächster Produktionsphase das Maximum produziert wird.
 		 * Berechne für 1,...,Anzahl die Bewertung einzeln (z.B eine Wkeit, dass das Produkt wegkommt) und
 		 * nehme dann den Durchschnitt.
-		 */
-		
-		
-		/*
-		 * Anzahl muss aus tempAnzaahl gelesen werden!!!
 		 */
 		
 		double summe = 0.0;

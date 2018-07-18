@@ -3,7 +3,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.LinkedList;
 
 import gurobi.GRB;
 import gurobi.GRBEnv;

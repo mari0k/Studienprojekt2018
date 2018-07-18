@@ -1,3 +1,4 @@
+package main;
 import java.util.Random;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -225,8 +226,8 @@ public class ImprovedLHS {
 		for (int i = 0; i < d; i++) {
 			for (int j = 0; j < n; j++) {
 				do {
-					//array[i][j] = ( lhs[j][i] - 1 + random.nextDouble() ) / d;
-					array[i][j] = ( lhs[j][i] - 1 + 0.5 ) / d;
+					//array[i][j] = ( lhs[j][i] - 1 + random.nextDouble() ) / d;	// Zufälliger Punkt aus Teilintervall
+					array[i][j] = ( lhs[j][i] - 1 + 0.5 ) / d;	// Mittelpunkt des Teilintervalls
 				} while (array[i][j] == 0);
 			}
 		}

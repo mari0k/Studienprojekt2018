@@ -1,3 +1,6 @@
+package unused;
+
+import main.Produkt;
 
 public class Lager {
 

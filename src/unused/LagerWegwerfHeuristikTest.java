@@ -1,3 +1,4 @@
+package unused;
 
 import java.util.Random;
 
@@ -7,6 +8,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import main.Produkt;
 
 public class LagerWegwerfHeuristikTest {
 
@@ -51,7 +53,7 @@ public class LagerWegwerfHeuristikTest {
 			
 			for (Produkt produkt : produkte) {
 				produkt.setTempAnzahl(anzahlen[produkt.getId()]);
-				produkt.bewerte(1, 2, 3); // muss noch richtig implementiert werden!!!
+				produkt.bewerte(); 
 			}
 			
 			

@@ -1,10 +1,10 @@
+package main;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-import unused.FirstFitDecreasing;
 
 public class Lagerung {
 
@@ -114,6 +114,8 @@ public class Lagerung {
 			GRBLinExpr expr = new GRBLinExpr();
 
 			for (Produkt produkt : inst.getProdukte()) {
+				produkt.setTempAnzahl(produkt.getAktuellerBestand());
+				produkt.bewerte();
 				expr.addTerm(produkt.getTempBewertung(), behalten[produkt.getId()]);
 			}
 
